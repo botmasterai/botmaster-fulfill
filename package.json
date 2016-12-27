@@ -4,8 +4,7 @@
   "description": "Declarative markup API and engine to integrate internal or external APIs with botmaster",
   "main": "./index.js",
   "scripts": {
-    "test": "mocha --recursive ./tests",
-    "start": "node examples/helloworld.js"
+    "test": "mocha --recursive ./tests"
   },
   "repository": {
     "type": "git",
@@ -21,25 +20,17 @@
     "toolkit"
   ],
   "author": "Jonathan R Wickens <wickensj@uk.ibm.com>",
-  "jshintConfig": {
-    "esversion": 6,
-    "node": true
-  },
   "license": "MIT",
   "dependencies": {
     "async": "^2.0.1",
     "bluebird": "^3.4.6",
     "cheerio": "^0.22.0",
-    "contextify": "^0.1.15",
-    "jQuery": "^1.7.4",
-    "jquery": "^3.1.1",
-    "jsdom": "^9.9.1",
-    "libxmljs": "^0.18.0",
-    "ramda": "^0.22.1",
-    "winston": "^2.2.0"
+    "debug": "^2.5.2",
+    "ramda": "^0.22.1"
   },
   "devDependencies": {
     "botmaster": "^2.2.3",
+    "eslint": "^3.12.2",
     "mocha": "^3.1.0",
     "nock": "^9.0.2",
     "should": "^11.1.0",

@@ -1,6 +1,7 @@
 const nock = require('nock');
 const request = require('supertest');
 const Botmaster = require('botmaster');
+const debug = require('debug')('botmaster:fulfill:test');
 
 const telegramToken = 'abc';
 const telegramWebhookEndpoint = '/boo124/';
@@ -13,17 +14,16 @@ const telegram = {
 };
 const botsSettings = [{telegram}];
 
-const botmaster = new Botmaster({botsSettings});
-
-const botmasterRunning = new Promise( (resolve, reject) => {
-    botmaster.on('server running', resolve);
+const botmaster = () => new Promise( (resolve, reject) => {
+    const botmaster = new Botmaster({botsSettings});
+    botmaster.on('server running', () => resolve(botmaster));
     botmaster.on('error', reject);
 });
 
-const telegramBots = botmaster.getBots('telegram');
-const telegramBot = telegramBots[0];
+const telegramBots = botmaster => botmaster.getBots('telegram');
+const telegramBot = botmaster => telegramBots(botmaster)[0];
 
-const telegramNock = nock(`https://api.telegram.org/bot${telegramToken}`).log(console.log);
+const telegramNock = () => nock(`https://api.telegram.org/bot${telegramToken}`).log(debug);
 
 
 const respond = botmaster => text =>
@@ -67,14 +67,14 @@ const outgoingMessage = text => ({
     }
 });
 
-const telegramMock = {
+const telegramMock = (botmaster, mock = telegramNock() ) => ({
     sendUpdate: (update, cb) => {
         request(botmaster.app)
             .post('/telegram' + telegramWebhookEndpoint)
             .send(incomingMessage(update))
             .expect(200)
             .end(cb);
-        return telegramMock;
+        return telegramMock(botmaster, telegramMock);
     },
     expect: (responses, cb) => {
         // mock the response on updating telegram
@@ -84,18 +84,18 @@ const telegramMock = {
         };
 
         responses.forEach((response, i) => {
-            telegramNock
+            mock
                 .post('/sendMessage', body => body.text == response || cb(new Error(`${body.text} does not match ${response}`)))
                 .reply(200, () => {
-                    console.log('yaya 200')
                     if (i + 1 == responses.length) cb();
                     return telegramResponse;
                 });
 
         });
-        return telegramMock;
-    }
-};
+        return telegramMock(botmaster, telegramMock);
+    },
+    cleanAll: () => telegramMock.cleanAll
+});
 
 
 module.exports = {
@@ -104,7 +104,6 @@ module.exports = {
     incomingMessage,
     telegramBot,
     botmaster,
-    botmasterRunning,
     telegramMock,
     respond
 };

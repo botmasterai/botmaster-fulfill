@@ -1,57 +1,70 @@
 require('should');
 const Promise = require('bluebird');
-const {fulfill} = require('../fulfill');
-const assert = require('assert');
-const R = require('ramda');
+const {
+    fulfill
+} = require('../fulfill');
 
 describe('fulfill', () => {
 
-    describe('Tag attributes and content are passed to the action controller")', () => {
-        it('it should return "hi bob" for an input "<hi>bob</hi> given an action "hi" that uses the content as a name to greet', done => {
-            const actions = {
-                hi: {
-                    controller: params => 'hi ' + params.content
-                }
-            };
-            fulfill(actions, {}, '<hi>bob</hi>', (err, result) => {
-                if (err) throw err;
-                result.should.equal('hi bob');
-                done();
+    describe('controller params', () => {
+
+        describe('params.content', () => {
+            it('it should return "hi bob" for an input "<hi>bob</hi> given an action "hi" that uses the content as a name to greet', done => {
+                const actions = {
+                    hi: {
+                        controller: params => 'hi ' + params.content
+                    }
+                };
+                fulfill(actions, {}, '<hi>bob</hi>', (err, result) => {
+                    if (err) throw err;
+                    result.should.equal('hi bob');
+                    done();
+                });
             });
         });
 
-        it('it should return "hi bob" for an input "<hi name=bob /> given an action "hi" that uses the attribute name as a name to greet', done => {
-            const actions = {
-                hi: {
-                    controller: params => 'hi ' + params.attributes.name
-                }
-            };
-            fulfill(actions, {}, '<hi name="bob" />', (err, result) => {
-                if (err) throw err;
-                result.should.equal('hi bob');
-                done();
+        describe('params.attributes', () => {
+            it('it should return "hi bob" for an input "<hi name=bob /> given an action "hi" that uses the attribute name as a name to greet', done => {
+                const actions = {
+                    hi: {
+                        controller: params => 'hi ' + params.attributes.name
+                    }
+                };
+                fulfill(actions, {}, '<hi name="bob" />', (err, result) => {
+                    if (err) throw err;
+                    result.should.equal('hi bob');
+                    done();
+                });
             });
         });
 
-        it('should return "hi bob" for an input "gibberish <hi /> bob <ignore />"', done => {
-            const actions = {
-                hi: {
-                    replace: 'adjacent',
-                    controller: params => 'hi ' + params.after
-                },
-                ignore: {
-                    controller: () => ''
-                }
-            };
-            fulfill(actions, {}, 'gibberish <hi /> bob <ignore />', (err, result) => {
-                if (err) throw err;
-                result.should.equal('hi bob');
-                done();
-            });
-        });
     });
 
-    describe('Actions that update context are reflected (assume "foo" and "bar" actions that update "foo" and "bar in context")', () => {
+    describe('controller options', () => {
+        describe('options.replace', () => {
+            describe('replace = "adjacent"', () => {
+                it('should return "hi bob" for an input "gibberish <hi /> bob <ignore />"', done => {
+                    const actions = {
+                        hi: {
+                            replace: 'adjacent',
+                            controller: params => 'hi ' + params.after
+                        },
+                        ignore: {
+                            controller: () => ''
+                        }
+                    };
+                    fulfill(actions, {}, 'gibberish <hi /> bob <ignore />', (err, result) => {
+                        if (err) throw err;
+                        result.should.equal('hi bob');
+                        done();
+                    });
+                });
+            });
+        });
+
+    });
+
+    describe('context updates', () => {
         it('context should have both foo and bar props on input result "<foo /> and <bar />', done => {
             const actions = {
                 foo: {
@@ -73,7 +86,7 @@ describe('fulfill', () => {
         });
     });
 
-    describe('Evaluates recursively if the result from an action contains another action', () => {
+    describe('recursion', () => {
         it('should return a "finally" for input result <foo />, actions foo and bar which evaluate to "<bar />" and "finally"', done => {
             const actions = {
                 foo: {
@@ -92,7 +105,7 @@ describe('fulfill', () => {
     });
 
 
-    describe('Evaluates multiple tags in a result (assume "john" and "mary" actions which return "John" and "Mary")', () => {
+    describe('iteration', () => {
         it('should return "John and Mary" for input result "<john /> and <mary />', done => {
             const actions = {
                 john: {
@@ -109,7 +122,7 @@ describe('fulfill', () => {
         });
     });
 
-    describe('Works with multiple return styles for the controllers (assume input result "<hi />" and action result "hello world"', () => {
+    describe('multiple return types', () => {
         let actions;
         const result = 'hello world';
         beforeEach(() => {
@@ -137,12 +150,39 @@ describe('fulfill', () => {
         });
 
         it('it should return "hello world" with promise controller', done => {
-            actions.hi.controller = (params) => new Promise((resolve, reject) => resolve(result));
+            actions.hi.controller = () => new Promise((resolve) => resolve(result));
             fulfill(actions, {}, '<hi />', (err, result) => {
                 result.should.equal('hello world');
                 done();
             });
+        });
 
+        it('it should catch an error with sync controller', done => {
+            actions.hi.controller = () => {
+                throw new Error('hi!');
+            };
+            fulfill(actions, {}, '<hi />', err => {
+                err.message.should.equal('hi!');
+                done();
+            });
+
+        });
+
+        it('it should catch an error with async controller', done => {
+            actions.hi.controller = (params, cb) => cb('hi!');
+            fulfill(actions, {}, '<hi />', err => {
+                err.should.equal('hi!');
+                done();
+            });
+
+        });
+
+        it('it should catch an error with promise controller', done => {
+            actions.hi.controller = () => new Promise((resolve, reject) => reject('hi!'));
+            fulfill(actions, {}, '<hi />', err => {
+                err.should.equal('hi!');
+                done();
+            });
         });
     });
 });
