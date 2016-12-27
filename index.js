@@ -7,29 +7,33 @@ const {fulfill} = require('./fulfill');
 const {
     defaultUpdateToContext,
     defaultUpdateToResponse,
-    responseToUpdate,
+    defaultResponseToUpdate,
 } = require('./botmaster');
 
 /**
  * Generate outgoing middleware for fulfill
  * @param  {Object} options.actions the actions to use
- * @param  {Object} options.updateToContext optional
- * @param  {Object} options.updateToResponse optional
+ * @param  {Object} options.updateToContext optional, a function that receives the botmaster {bot, update} and turns into the fulfill context
+ * @param  {Object} options.updateToResponse optional, a function that receives the botmaster (bot, update} and turns into the fulfill response
  * @return {function}         outgoing middleware
  */
 const handleOutgoing = options => (bot, update, next) => {
-    const updateToContext = options.updateToContext ? options.update.updateToContext : defaultUpdateToContext;
-    const updateToResponse = options.updateToResponse ? options.update.updateToResponse : defaultUpdateToResponse;
+    const updateToContext = options.updateToContext || defaultUpdateToContext;
+    const updateToResponse = options.updateToResponse || defaultUpdateToResponse;
+    const responseToUpdate = options.responseToUpdate || defaultResponseToUpdate;
+    console.log(`fulfill using actions: ${JSON.stringify(options.actions)}`);
+    console.log(`fulfill received update: ${JSON.stringify(update)}`);
+    console.log(`fulfill using as input: ${updateToResponse({bot, update})}`);
     fulfill(
         options.actions,
         updateToContext({bot, update}),
-        updateToResponse({bot, update})
-    ).then( (error, response) => {
-        if (response.response) {
-            R.compose(responseToUpdate)(response.response);
+        updateToResponse({bot, update}),
+        (error, response) => {
+            update.message.text = response; // can't use immutable paradigms here unfortunately
+            console.log(`fulfill sending new update: ${JSON.stringify(update)}`);
+            next(error);
         }
-        next();
-    });
+    );
 };
 
 module.exports = handleOutgoing;

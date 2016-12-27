@@ -35,20 +35,31 @@ const parallelActions = R.filter(R.compose(R.not, R.prop('series')));
 //const isAsync = action => !isPromise(action) && action.controller.length > 1;
 
 // get a list of all action tags of a particular type along with their params
+const defaultToString = R.defaultTo('');
 const evalAction = ($, actionSelector) => {
     const actionParams = [];
     $(actionSelector).each( (i, el) => {
+        console.log(el)
         const elXml = $(el);
+        //console.log(elXml[0])
+        //console.log(elXml[0].nextSibling)
+        //console.log(elXml[0].tagName)
+        //console.log(el)
+        //console.log(elXml[0].previousSibling)
+        //const after = $(el).parent().children().filter( index => index > i).html();
         actionParams.push({
             params: {
                 attributes: elXml.attr(),
-                content: elXml.html(),
+                content: elXml.html()
+                //before: R.compose(R.trim, defaultToString, R.path(['prev', 'data']))(el),
+                //after: R.compose(R.trim, defaultToString, R.path(['next', 'data']))(el)
             },
             name: el.name,
             el: elXml
         });
     });
-    console.log(`Got tasks: ${actionParams} using selector: $(${actionSelector})`);
+    console.log(R.map(R.path(['params', 'after']), actionParams));
+    console.log(`Got tasks: ${actionParams} using selector: $('${actionSelector}')`);
     return actionParams;
 };
 
@@ -107,7 +118,7 @@ const actionTask = (context, $) => task => cb => {
 // get an object specifying serial and parallal tasks and their async task and promise subtypes
 const getTasks = ($, actions, context, response) => {
     const tasks = getActionParams($, actions, context, response);
-    console.log(tasks)
+    //console.log(`evaluated tasks: ${JSON.stringify(tasks)}`);
     return {
         series: R.compose(R.map(actionTask(context, $)), seriesActions)(tasks),
         parallel: R.compose(R.map(actionTask(context, $)), parallelActions)(tasks)
@@ -116,11 +127,14 @@ const getTasks = ($, actions, context, response) => {
 
 // update the cheerio object with the responses from a particular action
 const evalResponse = ($, task) => {
-    if (typeof task.replace == 'function')
-        return task.replace($, task);
+    if (task.replace == 'adjacent') {
+        $(task.el.prev).remove();
+        $(task.el.next).remove();
+        task.el.replaceWith(task.response);
+    } else if (typeof task.replace == 'function')
+        task.replace($, task);
     else {
-        return task.el.replaceWith(task.response);
-
+        task.el.replaceWith(task.response);
     }
 };
 

@@ -30,11 +30,19 @@
     "async": "^2.0.1",
     "bluebird": "^3.4.6",
     "cheerio": "^0.22.0",
+    "contextify": "^0.1.15",
+    "jQuery": "^1.7.4",
+    "jquery": "^3.1.1",
+    "jsdom": "^9.9.1",
+    "libxmljs": "^0.18.0",
     "ramda": "^0.22.1",
     "winston": "^2.2.0"
   },
   "devDependencies": {
+    "botmaster": "^2.2.3",
     "mocha": "^3.1.0",
-    "should": "^11.1.0"
+    "nock": "^9.0.2",
+    "should": "^11.1.0",
+    "supertest": "^2.0.1"
   }
 }
