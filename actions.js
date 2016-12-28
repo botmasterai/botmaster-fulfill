@@ -20,6 +20,7 @@ const isPendingActions = ($, actions) => getPendingActionNames($, checkArray(act
 const getPendingActionSelectors = ($, actions) => R.compose(R.join(', '), R.curry(getPendingActionNames)($))(actions);
 const seriesActions = R.filter(R.prop('series'));
 const parallelActions = R.filter(R.compose(R.not, R.prop('series')));
+const isSync = R.allPass([x => !R.isNil(x), R.anyPass([R.is(String), R.is(Number)])]);
 const mergeActionAndTask = (actions, tasks) => R.map(
     task => R.merge(actions[task.name], task),
     tasks);
@@ -93,7 +94,7 @@ const actionTask = (context, $) => task => cb => {
             result
                 .then( response => internalCallback(null, response))
                 .catch( internalCallback );
-        } else if (! R.isNil(result) ) {
+        } else if (isSync(result)) {
             nextTick( () => internalCallback(null, result) );
         }
     } catch (err) {

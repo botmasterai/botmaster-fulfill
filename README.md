@@ -214,7 +214,7 @@ All of these settings are optional and have reasonable defaults.
 
 1. `settings.context` By default `{bot, update}` is passed as the context object which is made available to actions. If you want any other variables available in the context assign them as values in the `settings.object`. `bot` and `update` will still be passed into the fulfill context and will overwrite any `bot` or `update` in your custom context.
 2. `settings.updateToInput` By default `update.message.text` is used as the input into response. If this is not acceptable you can define your own function. It will receive an object `{bot, update}` and expect a string response.
-3. `settings.responseToUpdate` By default `update.message.text` is replaced with the response from fulfill. To define your own setter define a function that accepts `update` and `response` and modifies the update in place.
+3. `settings.responseToUpdate` By default `update.message.text` is replaced with the response from fulfill. It also returns true for sending an update when the response is not empty (`''`). To define your own setter define a function that accepts `update` and `response`, modifies the update in place, and returns true or false whether that update should be sent.
 
 # Using standalone without botmaster
 

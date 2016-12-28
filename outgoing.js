@@ -9,7 +9,10 @@ const debug = require('debug')('botmaster:fulfill');
 // Utility functions for working with botmaster
 const textLens = R.lensPath(['update', 'message', 'text']);
 const defaultUpdateToInput= R.view(textLens);
-const defaultResponseToUpdate = (update, response) => update.message.text = response; // can't use immutable paradigms here unfortunately
+const defaultResponseToUpdate = (update, response) => {
+    update.message.text = response; // can't use immutable paradigms here unfortunately
+    return R.isEmpty(update.message.text) == false;
+};
 
 /**
  * Generate outgoing middleware for fulfill
@@ -35,9 +38,13 @@ const outgoing = options => (bot, update, next) => {
         context,
         updateToInput({bot, update}),
         (error, response) => {
-            responseToUpdate(update, response);
-            next(error);
-            debug(`fulfill sent new update: ${JSON.stringify(update)}`);
+            const nonEmptyUpdate = responseToUpdate(update, response);
+            if (nonEmptyUpdate) {
+                next(error);
+                debug(`fulfill sent new update: ${JSON.stringify(update)}`);
+            } else {
+                debug('no final update to send');
+            }
         }
     );
 };

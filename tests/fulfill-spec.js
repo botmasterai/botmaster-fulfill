@@ -43,7 +43,7 @@ describe('fulfill', () => {
     describe('controller options', () => {
         describe('options.replace', () => {
             describe('replace = "adjacent"', () => {
-                it('should return "hi bob" for an input "gibberish <hi /> bob <ignore />"', done => {
+                it('it should return "hi bob" for an input "gibberish <hi /> bob <ignore />"', done => {
                     const actions = {
                         hi: {
                             replace: 'adjacent',
@@ -61,7 +61,35 @@ describe('fulfill', () => {
                 });
             });
         });
+        describe('options.series', () => {
+            it('it should perform async operations in series when series = true (and parallel when series is not true)', done => {
+                let counter = 0;
+                const start = (new Date()).getTime();
+                const checkParallel = () => {
+                    const now = (new Date()).getTime();
+                    if (Math.abs(now - start - 50) < 15)
+                        return '-';
+                    else
+                        return '+';
+                };
+                const actions = {
+                    count: {
+                        series: true,
+                        controller: (params, cb) => setTimeout(() => cb(null, '' + counter++), 50)
+                    },
+                    parallel: {
+                        parallel: true,
+                        controller: (params, cb) => setTimeout(() => cb(null, checkParallel()), 50)
+                    }
+                };
+                fulfill(actions, {}, '<count /><parallel /><count /><parallel /><count />', (err, result) => {
+                    if (err) throw err;
+                    result.should.equal('0-1-2');
+                    done();
+                });
 
+            });
+        });
     });
 
     describe('context updates', () => {

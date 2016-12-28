@@ -74,7 +74,7 @@ const telegramMock = (botmaster, mock = telegramNock() ) => ({
             .send(incomingMessage(update))
             .expect(200)
             .end(cb);
-        return telegramMock(botmaster, telegramMock);
+        return telegramMock(botmaster, mock);
     },
     expect: (responses, cb) => {
         // mock the response on updating telegram
@@ -84,7 +84,7 @@ const telegramMock = (botmaster, mock = telegramNock() ) => ({
         };
 
         responses.forEach((response, i) => {
-            mock
+             mock
                 .post('/sendMessage', body => body.text == response || cb(new Error(`${body.text} does not match ${response}`)))
                 .reply(200, () => {
                     if (i + 1 == responses.length) cb();
@@ -92,9 +92,9 @@ const telegramMock = (botmaster, mock = telegramNock() ) => ({
                 });
 
         });
-        return telegramMock(botmaster, telegramMock);
+        return telegramMock(botmaster, mock);
     },
-    cleanAll: () => telegramMock.cleanAll
+    cleanAll: () => nock.cleanAll()
 });
 
 
