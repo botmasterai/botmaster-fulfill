@@ -18,6 +18,10 @@ Fulfill makes this easy with declarative markup that is easy to understand for n
 # Quick start
 All you need to get started.
 
+```bash
+npm install botmaster-fulfill
+```
+
 ```js
 const {outgoing} = require('botmaster-fulfill');
 const Botmaster = require('botmaster');
@@ -34,12 +38,13 @@ botmaster.on('update', bot => bot.sendMessage('<hi />'));
 
 
 # Introduction
-botmaster-fulfill extends botmaster with a repotoire of actions that your bots can perform with a declarative and easy to use syntax based on XML. It is a great way to separate business logic (when to do what and where) and functional logic (how to do it).
+botmaster-fulfill extends botmaster with a repertoire of actions that your bots can perform with a declarative and easy to use syntax based on XML. It is a great way to separate business logic (when to do what and where) and functional logic (how to do it).
 
 When writing the output of your bots all you have to do is write: `"ok <userName />, im placing your order for you. <placeOrder /> here you go. "`
 
 Here `<userName />` could for example mean get a human readable version of the audience's name.
-`<placeOrder />`  does two much more interesting things and demonstrates the power of using markup over a simple field-based JSON payload. First, it sends the rest of the message before it onwards so that the user knows we are placing his order. Second, it starts placing the order and when its done, it sends the text following it.
+
+`<placeOrder />`  does two much more interesting things and demonstrates the power of using markup over a simple field-based JSON payload. First, it sends the rest of the message before the tag ("ok bob, I'm placing your order for you.") onwards so that the user knows we are placing his order. Second, it starts placing the order and when its done, it sends the text following it, "here you go."
 
 And in order to connect that all you have to do is write in plain js:
 ```js
@@ -85,15 +90,15 @@ Once fulfill has finished evaluating or actions you get back an updated response
 You should provide an `actions` object where the key is the name of the xml element that will be matched. The value should specify another object that has the key `controller` which as a value should have a function that takes `params` and an optional callback.
 
 ```javascript
-actions = {
+const actions = {
 // sync <burgerImage /> example
   burgerImage: {
     controller: function() {
       return "<img url='some/complex/static/path/burger.png'>";
     }
+  },
 // error first callback <modifyOrder style='someStyle'>Stuff to order</modifyOrder>
-  }, modifyOrder: {
-
+  modifyOrder: {
     controller: function(params, cb) {
       myOrderAPI.modify(params.context.orderId, params.content, params.attributes.style, function(err) {
         if (! err) {
@@ -103,8 +108,9 @@ actions = {
         }
         });
     }
+  },
 // promise example
-  }, hi: {
+  hi: {
     controller: function(params) {
         return new Promise(function(resolve, reject) {
           resolve("hello world");
@@ -173,11 +179,13 @@ With the default mode you can only replace the tag. There are however other mode
 
 # Using botmaster-fulfill
 
-Botmaster-fulfill exports two functions. The first is `fulfill` and implements the fulfill API. The second `outgoing` produces botmaster outgoing middleware. Since botmaster is the preferred integration method let's start with an example of that first:
+Botmaster-fulfill exports two functions. The first is `fulfill` and implements the fulfill API. The second `outgoing` produces botmaster outgoing middleware.
 
-
-
-Here we require the necessary dependencies (getting the outgoing function through destructuring), connect our bots to botmaster. Before connecting our middleware we define a simple "hello world" action. We use this as part of the settings we pass to outgoing for it to generate our middleware.
+If you look at the quick start example the necessary steps are:
+1. require the necessary dependencies (the examples gets the outgoing function through destructuring)
+2. connect our bots to botmaster
+3. get actions pass as settings object to `outgoing` function for it to generate our middleware.
+4. register the resulting middleware to botmaster outgoing middlware.
 
 ## Additional middleware options
 
@@ -199,6 +207,26 @@ fulfill(actions, context, input, function(err, response)  {
     // response =  'hello world!'
 })
 ```
+
+# Setup hint - drag and drop action modules
+
+You can drag and drop actions by requiring from an actions folder where you setup your middleware:
+```js
+const actions = require('./actions');
+```
+
+In your your actions directory then need to include an index.js:
+```js
+const fs = require("fs");
+const path = require("path");
+
+fs.readdirSync(__dirname).forEach(function (file) {
+    if (file.endsWith(".js") && file !== "index.js")
+        exports[file.substr(0, file.length - 3)] = require("./" + file);
+});
+```
+
+Each action module should export an object that specifies a controller.
 
 # Debug
 
