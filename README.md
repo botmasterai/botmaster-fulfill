@@ -14,24 +14,86 @@ _Good Burger, Brian Robbins (1997)_
 
 Fulfill makes this easy with declarative markup that is easy to understand for non-technical chat authors and is easy to integrate into your current botmaster stack.
 
-# How to use the fulfill API
 
-`require('fulfill-outgoing-ware')` returns a middleware generator function that takes a settings object. Most importantly you can specify an actions object. Each action in the actions objects specifies a controller that is a javascript function that can return either by callback, promise or even synchronously. The action controller receives the content, attributes, and a context object which it can use as parameters. It can update the context and its return value will replace the tag. If the returned value from an action includes another action, this action will also be evaluated.
+# Quick start
+All you need to get started.
 
-You get back an updated array of strings and an updated context.
+```js
+const {outgoing} = require('botmaster-fulfill');
+const Botmaster = require('botmaster');
+const botsSettings = require('./my-bots-settings');
+const botmaster = new Botmaster({botsSettings});
+const actions = {
+        hi: {
+            controller: () => 'hi there!'
+        }
+}
+botmaster.use('outgoing', outgoing({actions}));
+botmaster.on('update', bot => bot.sendMessage('<hi />'));
+```
 
-# Action Format
+
+# Introduction
+botmaster-fulfill extends botmaster with a repotoire of actions that your bots can perform with a declarative and easy to use syntax based on XML. It is a great way to separate business logic (when to do what and where) and functional logic (how to do it).
+
+When writing the output of your bots all you have to do is write: `"ok <userName />, im placing your order for you. <placeOrder /> here you go. "`
+
+Here `<userName />` could for example mean get a human readable version of the audience's name.
+`<placeOrder />`  does two much more interesting things and demonstrates the power of using markup over a simple field-based JSON payload. First, it sends the rest of the message before it onwards so that the user knows we are placing his order. Second, it starts placing the order and when its done, it sends the text following it.
+
+And in order to connect that all you have to do is write in plain js:
+```js
+const actions = {
+    // for <userName />
+    userName: {
+        controller: function(params) {
+            // return a promise (using an imaginary getUser method)
+            return getUser(params.context.user)
+                .then( function(result) {
+                    return result.user.name
+                    // if name is "bob" then the text would be
+                    // "ok bob, I'm placing your oder for you."
+                });
+        }
+    },
+    // for <placeOrder />
+    placeOrder: {
+        // replace not just the tag, but the text after too
+        replace: 'after',
+        controller: function(params) {
+            placeOrder(params.context.order)
+                .then( function(result) {
+                    // once the order is placed then send the rest of the message
+                    params.sendMessage(params.after)
+                });
+            // remove the tag and the text after it and send the message ("ok bob, I'm placing your order for you.")
+            return '';
+        }
+    }
+}
+```
+
+
+# How to use the Fulfill API
+
+You use fulfill by specifying an action spec. At a minimum your spec must specify controller as a javascript function that can return either by callback, promise or even synchronously. The action controller receives a params object which it can use as parameters such as the contents of the tag or data about the chat, which is stored in a variable called context. It can update the context and its return value will replace the tag. If the returned value from an action includes another action, this action will also be evaluated.
+
+Once fulfill has finished evaluating or actions you get back an updated response string and any context passed in has been modified in place.
+
+## Format for the action spec
 
 You should provide an `actions` object where the key is the name of the xml element that will be matched. The value should specify another object that has the key `controller` which as a value should have a function that takes `params` and an optional callback.
 
 ```javascript
 actions = {
-  raiseSkull: {
-    controller: function(params) {
-      params.context.monolog = true;
-      return "<img url='myLongSkullImageUrl.jpg'>";
+// sync <burgerImage /> example
+  burgerImage: {
+    controller: function() {
+      return "<img url='some/complex/static/path/burger.png'>";
     }
+// error first callback <modifyOrder style='someStyle'>Stuff to order</modifyOrder>
   }, modifyOrder: {
+
     controller: function(params, cb) {
       myOrderAPI.modify(params.context.orderId, params.content, params.attributes.style, function(err) {
         if (! err) {
@@ -41,6 +103,7 @@ actions = {
         }
         });
     }
+// promise example
   }, hi: {
     controller: function(params) {
         return new Promise(function(resolve, reject) {
@@ -55,9 +118,11 @@ actions = {
 
 Params argument provides several variables that can control its behavior.
 
-* `params.context`: a reference to the context object which can be updated or read
-* `params.content`: the literal text between the xml element opening and closing
-* `params.attributes`: an object where keys are the name of an attribute against the xml element and the the value is the value of that attribute.
+- `params.context`: a reference to the context object which can be updated or read
+- `params.content`: the literal text between the xml element opening and closing
+- `params.attributes`: an object where keys are the name of an attribute against the xml element and the the value is the value of that attribute.
+- `params.after`: the text immediately following the tag, up to another tag.
+- `params.before`: the text immediately preceding the tag, up to another tag.
 
 ### Suggested context setup:
 
@@ -67,10 +132,15 @@ It should not be confused with the `context` variable that your NLU like IBM Con
 Here's a good setup for context that will allow your actions a great deal of flexibility:
 
 ```js
-const fullfillContext = {
+const context = {
     chatContext, // specific to your NLU
     apis // configured APIs connector libraries to call in your actions
 }
+```
+
+To configure this in your middleware:
+```js
+botmaster.use('outgoing', outgoing({actions, context}))
 ```
 
 ### Where did my NLU context go?
@@ -79,7 +149,7 @@ In botmaster the fulfill context will also have `context.update` available. To g
 
 ### Getting impatient - emitting updates before fulfill has completed
 
-You might want to "cascade" messages and separate them by one minute pauses. Or you want to let your user know that you are working on it. Whatever your use case, emitting multiple updates is not a problem. In botmaster you will also have available `context.bot.sendMessage` which you can use to send another template response down the pipeline. This will be processed again by fulfill since fulfill is part of the outgoing middleware stack. This is actually advantageous because this way you can be sure that there are no further actions to fulfill from the emitted message.
+You might want to cascade messages and separate them by one minute pauses. Or you want to let your user know that you are working on it. Whatever your use case, emitting multiple updates is not a problem. In botmaster you will also have available `context.bot.sendMessage` which you can use to send another template response down the pipeline. This will be processed again by fulfill since fulfill is part of the outgoing middleware stack. This is actually advantageous because this way you can be sure that there are no further actions to fulfill from the emitted message.
 
 If you are not using botmaster you can achieve the same thing by including in the context an emitter which should set off a handler that calls fulfill.
 
@@ -105,19 +175,7 @@ With the default mode you can only replace the tag. There are however other mode
 
 Botmaster-fulfill exports two functions. The first is `fulfill` and implements the fulfill API. The second `outgoing` produces botmaster outgoing middleware. Since botmaster is the preferred integration method let's start with an example of that first:
 
-```js
-const {outgoing} = require('botmaster-fulfill');
-const Botmaster = require('botmaster');
-const botsSettings = require('./my-bots-settings');
-const botmaster = new Botmaster({botsSettings});
-const actions = {
-        hi: {
-            controller: () => 'hi there!'
-        }
-}
-botmaster.use('outgoing', outgoing({actions}));
-botmaster.on('update', bot => bot.sendMessage('<hi />'));
-```
+
 
 Here we require the necessary dependencies (getting the outgoing function through destructuring), connect our bots to botmaster. Before connecting our middleware we define a simple "hello world" action. We use this as part of the settings we pass to outgoing for it to generate our middleware.
 
