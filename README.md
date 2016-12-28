@@ -1,4 +1,7 @@
+Battle-tested botmaster (https://botmasterai.github.io/) middleware to enable chatbots to perform actions on Node.js.
+
 # Markup for your chatbot.
+
 ```html
  Chabot: "Let me see if I can place your order, <pause /> <placeOrder id=12 />"
  ```
@@ -14,6 +17,8 @@ _Good Burger, Brian Robbins (1997)_
 
 Fulfill makes this easy with declarative markup that is easy to understand for non-technical chat authors and is easy to integrate into your current botmaster stack.
 
+Available on npm:
+https://www.npmjs.com/package/botmaster-fulfill
 
 # Quick start
 All you need to get started.
@@ -35,7 +40,6 @@ const actions = {
 botmaster.use('outgoing', outgoing({actions}));
 botmaster.on('update', bot => bot.sendMessage('<hi />'));
 ```
-
 
 # Introduction
 botmaster-fulfill extends botmaster with a repertoire of actions that your bots can perform with a declarative and easy to use syntax based on XML. It is a great way to separate business logic (when to do what and where) and functional logic (how to do it).
@@ -77,7 +81,6 @@ const actions = {
     }
 }
 ```
-
 
 # How to use the Fulfill API
 
