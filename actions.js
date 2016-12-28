@@ -90,12 +90,16 @@ const actionTask = (context, $) => task => cb => {
     };
     try {
         const result = task.controller(task.params, internalCallback);
-        if (typeof result.then == 'function') {
+        if (result && typeof result.then == 'function') {
+            debug(`${task.name} controller is a promise`);
             result
                 .then( response => internalCallback(null, response))
                 .catch( internalCallback );
         } else if (isSync(result)) {
+            debug(`${task.name} controller is sync`);
             nextTick( () => internalCallback(null, result) );
+        } else {
+            debug(`${task.name} controller is async`);
         }
     } catch (err) {
         nextTick( () => cb(err) );

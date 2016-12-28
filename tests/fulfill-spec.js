@@ -168,8 +168,17 @@ describe('fulfill', () => {
 
         });
 
-        it('it should return "hello world" with async controller', done => {
+        it('it should return "hello world" with async controller returning function', done => {
             actions.hi.controller = (params, cb) => cb(null, result);
+            fulfill(actions, {}, '<hi />', (err, result) => {
+                result.should.equal('hello world');
+                done();
+            });
+
+        });
+
+        it('it should return "hello world" with async controller returning nothing', done => {
+            actions.hi.controller = (params, cb) => {setTimeout(() => cb(null, result), 1);};
             fulfill(actions, {}, '<hi />', (err, result) => {
                 result.should.equal('hello world');
                 done();
