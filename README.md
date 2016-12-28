@@ -1,5 +1,23 @@
 Battle-tested botmaster (https://botmasterai.github.io/) middleware to enable chatbots to perform actions on Node.js.
 
+<!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Markup for your chatbot.](#markup-for-your-chatbot)
+- [Quick start](#quick-start)
+- [Introduction](#introduction)
+- [How to use the Fulfill API](#how-to-use-the-fulfill-api)
+	- [Format for the action spec](#format-for-the-action-spec)
+	- [More info on params:](#more-info-on-params)
+	- [Additional controller configuration options](#additional-controller-configuration-options)
+- [Using botmaster-fulfill](#using-botmaster-fulfill)
+	- [Additional middleware options](#additional-middleware-options)
+- [Using standalone without botmaster](#using-standalone-without-botmaster)
+- [Setup hint - drag and drop action modules](#setup-hint-drag-and-drop-action-modules)
+- [Debug](#debug)
+
+<!-- /TOC -->
+
+
 # Markup for your chatbot.
 
 ```html
