@@ -1,5 +1,4 @@
 require('should');
-const Promise = require('bluebird');
 const {
     fulfill
 } = require('../fulfill');
