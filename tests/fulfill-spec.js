@@ -221,4 +221,28 @@ describe('fulfill', () => {
             });
         });
     });
+
+    describe('edge cases', () => {
+        let actions;
+        beforeEach(() => {
+            actions = {
+                hi: {}
+            };
+        });
+
+        it('it should handle empty input', done => {
+            actions.hi.controller = (params, cb) => cb('hi!');
+            fulfill(actions, {}, '', (err, result) => {
+                result.should.equal('');
+                done();
+            });
+        });
+
+        it('it should handle empty action spec', done => {
+            fulfill({}, {}, '<hi/>', (err, result) => {
+                result.should.equal('<hi/>');
+                done();
+            });
+        });
+    });
 });
