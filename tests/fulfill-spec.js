@@ -37,24 +37,106 @@ describe('fulfill', () => {
             });
         });
 
+        describe('params.beforeAll', () => {
+            it('it should pass "hi <there/> " to bob controller when given input "hi <there /><bob /> ! <how /> are you?"', done => {
+                const actions = {
+                    bob: {
+                        controller: params => {
+                            params.beforeAll.should.equal('hi <there/>');
+                            done();
+                        }
+                    }
+                };
+                fulfill(actions, {}, 'hi <there /><bob /> ! <how / are you?', done);
+            });
+        });
+
+        describe('params.afterAll', () => {
+            it('it should pass "hi <there />" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', done => {
+                const actions = {
+                    bob: {
+                        controller: params => {
+                            params.afterAll.should.equal(' ! <how/> are you?');
+                            done();
+                        }
+                    }
+                };
+                fulfill(actions, {}, 'hi <there /> <bob /> ! <how /> are you?', done);
+            });
+        });
+
+
+        describe('params.before', () => {
+            it('it should pass "hi" as params.before to action <bob /> in when given input "hi <bob />"', done => {
+                const actions = {
+                    bob: {
+                        controller: params => {
+                            params.before.should.equal('hi');
+                            done();
+                        }
+                    }
+                };
+                fulfill(actions, {}, 'hi <bob />');
+
+            });
+        });
+
     });
 
     describe('controller options', () => {
         describe('options.replace', () => {
-            describe('replace = "adjacent"', () => {
-                it('it should return "hi bob" for an input "gibberish <hi /> bob <ignore />"', done => {
+            describe('replace = "beforeAll"', () => {
+                it('it should return "hi bob for an input "foo <beep/> feep <boop /> gibberish <hi /> bob <ignore />"', done => {
                     const actions = {
                         hi: {
-                            replace: 'adjacent',
-                            controller: params => 'hi ' + params.after
+                            replace: 'beforeAll',
+                            controller: () => 'hi'
                         },
                         ignore: {
                             controller: () => ''
                         }
                     };
-                    fulfill(actions, {}, 'gibberish <hi /> bob <ignore />', (err, result) => {
+                    fulfill(actions, {}, 'gibberish <hi /> bob<ignore />', (err, result) => {
                         if (err) throw err;
                         result.should.equal('hi bob');
+                        done();
+                    });
+                });
+
+            });
+            describe('replace = "before"', () => {
+                it('it should return "hi bob for an input "gibberish <hi /> bob <ignore />"', done => {
+                    const actions = {
+                        hi: {
+                            replace: 'before',
+                            controller: () => 'hi'
+                        },
+                        ignore: {
+                            controller: () => ''
+                        }
+                    };
+                    fulfill(actions, {}, 'gibberish <hi /> bob<ignore />', (err, result) => {
+                        if (err) throw err;
+                        result.should.equal('hi bob');
+                        done();
+                    });
+                });
+
+            });
+            describe('replace = "adjacent"', () => {
+                it('it should return "hi" for an input "gibberish <hi /> bob<ignore />"', done => {
+                    const actions = {
+                        hi: {
+                            replace: 'adjacent',
+                            controller: () => 'hi'
+                        },
+                        ignore: {
+                            controller: () => ''
+                        }
+                    };
+                    fulfill(actions, {}, 'gibberish <hi /> bob<ignore />', (err, result) => {
+                        if (err) throw err;
+                        result.should.equal('hi');
                         done();
                     });
                 });
@@ -63,10 +145,10 @@ describe('fulfill', () => {
         describe('options.series', () => {
             it('it should perform async operations in series when series = true (and parallel when series is not true)', done => {
                 let counter = 0;
-                const start = (new Date()).getTime();
+                const start = Date.now();
                 const checkParallel = () => {
-                    const now = (new Date()).getTime();
-                    if (Math.abs(now - start - 50) < 15)
+                    const now = Date.now();
+                    if (Math.abs(now - start - 50) < 30)
                         return '-';
                     else
                         return '+';

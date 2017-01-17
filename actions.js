@@ -4,10 +4,12 @@
 
 const R = require('ramda');
 const { nextTick} = require('async');
+const {loadCheerio} = require('./cheerio');
 const debug = require('debug')('botmaster:fulfill:actions');
 
 // ramda-style utils for procesing action arrays
 const defaultToString = R.defaultTo('');
+const cleanString = R.compose(R.trim, defaultToString);
 const setName = (val, key) => R.set(R.lensProp('name'), key)(val);
 const indexActionName = R.mapObjIndexed(setName);
 const toArray = R.compose(R.values, indexActionName);
@@ -25,6 +27,15 @@ const mergeActionAndTask = (actions, tasks) => R.map(
     task => R.merge(actions[task.name], task),
     tasks);
 
+// remove text nodes in cheerio object in place
+const clearTextRecurse = (position, el, recurse=true) => {
+    if (el[position]) {
+        if (el[position].data) el[position].data= '';
+        if (recurse) clearTextRecurse(position, el[position]);
+    }
+};
+const clearText = R.curry(clearTextRecurse)(R.__, R.__, false);
+
 // get a list of all action tags of a particular type along with their params
 const evalAction = ($, actionSelector) => {
     const actionParams = [];
@@ -32,10 +43,34 @@ const evalAction = ($, actionSelector) => {
         const elXml = $(el);
         actionParams.push({
             params: {
-                attributes: elXml.attr(),
-                content: elXml.html(),
-                before: R.compose(R.trim, defaultToString, R.path(['prev', 'data']))(el),
-                after: R.compose(R.trim, defaultToString, R.path(['next', 'data']))(el)
+                get attributes () {
+                    return elXml.attr();
+                },
+                get content() {
+                    return elXml.html();
+                },
+                get before() {
+                    return R.compose(cleanString, R.path(['prev', 'data']))(el);
+                },
+                get beforeAll() {
+                    const $2 = loadCheerio($.html());
+                    const el2 = $2(actionSelector).eq(i)[0];
+                    clearTextRecurse('next', el2);
+                    $2(actionSelector).eq(i).nextAll().remove();
+                    $2(actionSelector).eq(i).remove();
+                    return $2.html();
+                },
+                get after() {
+                    return R.compose(cleanString, R.path(['prev', 'data']))(el);
+                },
+                get afterAll() {
+                    const $2 = loadCheerio($.html());
+                    const el2 = $2(actionSelector).eq(i)[0];
+                    clearTextRecurse('prev', el2);
+                    $2(actionSelector).prevAll().remove();
+                    $2(actionSelector).remove();
+                    return $2.html();
+                }
             },
             name: el.name,
             el: elXml
@@ -53,11 +88,7 @@ const getActionParams = ($, actions) => R.compose(
     toArray // operate on an array rather than object
 )(actions);
 
-// remove text nodes in cheerio object in place
-const clearText = position => task => {
-    if (R.view(R.lensPath(['el', 0, position, 'type']))(task))
-        task.el[0][position].data = '';
-};
+
 
 // update the cheerio object with the responses from a particular action
 const evalResponse = ($, task) => {
@@ -65,15 +96,23 @@ const evalResponse = ($, task) => {
         task.replace($, task);
     else {
         switch (task.replace) {
+            case 'beforeAll':
+                $(task.el).prevAll().remove();
+                clearTextRecurse('prev', task.el[0]);
+                break;
             case 'before':
-                clearText('prev')(task);
+                clearText('prev', task.el[0]);
+                break;
+            case 'afterAll':
+                $(task.el).nextAll().remove();
+                clearTextRecurse('next', task.el[0]);
                 break;
             case 'after':
-                clearText('next')(task);
+                clearText('next', task.el[0]);
                 break;
             case 'adjacent':
-                clearText('prev')(task);
-                clearText('next')(task);
+                clearText('prev', task.el[0]);
+                clearText('next', task.el[0]);
                 break;
         }
         task.el.replaceWith(task.response);
