@@ -25,9 +25,7 @@
     "async": "^2.0.1",
     "cheerio": "^0.22.0",
     "debug": "^2.5.2",
-    "ramda": "^0.22.1",
-    "transducers-js": "^0.4.174",
-    "xml2js": "^0.4.17"
+    "ramda": "^0.22.1"
   },
   "devDependencies": {
     "botmaster": "^2.2.3",
