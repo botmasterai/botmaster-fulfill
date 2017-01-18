@@ -29,7 +29,7 @@ const mergeActionAndTask = (actions, tasks) => R.map(
 
 // remove text nodes in cheerio object in place
 const clearTextRecurse = (position, el, recurse=true) => {
-    if (el[position]) {
+    if (el && el[position]) {
         if (el[position].data) el[position].data= '';
         if (recurse) clearTextRecurse(position, el[position]);
     }
