@@ -1,4 +1,4 @@
-require('should');
+const should = require('should');
 const {
     fulfill
 } = require('../fulfill');
@@ -35,28 +35,23 @@ describe('fulfill', () => {
                     done();
                 });
             });
-        });
 
-        describe('params.beforeAll', () => {
-            it('it should pass "hi <there/> " to bob controller when given input "hi <there /><bob /> ! <how /> are you?"', done => {
+            it('it should always give attibutes even when there are none', done => {
                 const actions = {
-                    bob: {
-                        controller: params => {
-                            params.beforeAll.should.equal('hi <there/>');
-                            done();
-                        }
+                    hi: {
+                        controller: params => should.exist(params.attributes) || done()
                     }
                 };
-                fulfill(actions, {}, 'hi <there /><bob /> ! <how / are you?', done);
-            });
+                fulfill(actions, {}, '<hi/>', done);
+            })
         });
 
-        describe('params.afterAll', () => {
-            it('it should pass "hi <there />" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', done => {
+        describe('params.after', () => {
+            it('it should pass " ! <how/> are you?" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', done => {
                 const actions = {
                     bob: {
                         controller: params => {
-                            params.afterAll.should.equal(' ! <how/> are you?');
+                            params.after.should.equal(' ! <how></how> are you?');
                             done();
                         }
                     }
@@ -76,8 +71,20 @@ describe('fulfill', () => {
                         }
                     }
                 };
-                fulfill(actions, {}, 'hi <bob />');
+                fulfill(actions, {}, 'hi<bob />', done);
 
+            });
+
+            it('it should pass "hi <there/> " to bob controller when given input "hi <there /><bob /> ! <how /> are you?"', done => {
+                const actions = {
+                    bob: {
+                        controller: params => {
+                            params.before.should.equal('hi <there></there>');
+                            done();
+                        }
+                    }
+                };
+                fulfill(actions, {}, 'hi <there /><bob /> ! <how / are you?', done);
             });
         });
 
@@ -85,25 +92,6 @@ describe('fulfill', () => {
 
     describe('controller options', () => {
         describe('options.replace', () => {
-            describe('replace = "beforeAll"', () => {
-                it('it should return "hi bob for an input "foo <beep/> feep <boop /> gibberish <hi /> bob <ignore />"', done => {
-                    const actions = {
-                        hi: {
-                            replace: 'beforeAll',
-                            controller: () => 'hi'
-                        },
-                        ignore: {
-                            controller: () => ''
-                        }
-                    };
-                    fulfill(actions, {}, 'gibberish <hi /> bob<ignore />', (err, result) => {
-                        if (err) throw err;
-                        result.should.equal('hi bob');
-                        done();
-                    });
-                });
-
-            });
             describe('replace = "before"', () => {
                 it('it should return "hi bob for an input "gibberish <hi /> bob <ignore />"', done => {
                     const actions = {
@@ -122,12 +110,10 @@ describe('fulfill', () => {
                     });
                 });
 
-            });
-            describe('replace = "adjacent"', () => {
-                it('it should return "hi" for an input "gibberish <hi /> bob<ignore />"', done => {
+                it('it should return "hi bob for an input "foo <beep/> feep <boop /> gibberish <hi /> bob <ignore />"', done => {
                     const actions = {
                         hi: {
-                            replace: 'adjacent',
+                            replace: 'before',
                             controller: () => 'hi'
                         },
                         ignore: {
@@ -136,10 +122,11 @@ describe('fulfill', () => {
                     };
                     fulfill(actions, {}, 'gibberish <hi /> bob<ignore />', (err, result) => {
                         if (err) throw err;
-                        result.should.equal('hi');
+                        result.should.equal('hi bob');
                         done();
                     });
                 });
+
             });
         });
         describe('options.series', () => {
@@ -322,7 +309,7 @@ describe('fulfill', () => {
 
         it('it should handle empty action spec', done => {
             fulfill({}, {}, '<hi/>', (err, result) => {
-                result.should.equal('<hi/>');
+                result.should.equal('<hi></hi>');
                 done();
             });
         });

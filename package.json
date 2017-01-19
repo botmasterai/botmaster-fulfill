@@ -23,12 +23,14 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.0.1",
-    "cheerio": "^0.22.0",
     "debug": "^2.5.2",
+    "posthtml-parser": "^0.2.0",
+    "posthtml-render": "^1.0.6",
     "ramda": "^0.22.1"
   },
   "devDependencies": {
     "botmaster": "^2.2.3",
+    "botmaster-test": "0.0.2",
     "eslint": "^3.12.2",
     "mocha": "^3.1.0",
     "nock": "^9.0.2",

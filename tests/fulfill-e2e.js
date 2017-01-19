@@ -4,7 +4,7 @@ const {
     telegramMock,
     respond,
     outgoingMessage
-} = require('./helper');
+} = require('botmaster-test');
 
 describe('botmaster-fulfill', () => {
     let myBotmaster;

@@ -4,7 +4,7 @@
 
 const R = require('ramda');
 const {fulfill} = require('./fulfill');
-const debug = require('debug')('botmaster:fulfill');
+const debug = require('debug')('botmaster:fulfill:outgoing');
 
 // Utility functions for working with botmaster
 const textLens = R.lensPath(['update', 'message', 'text']);
