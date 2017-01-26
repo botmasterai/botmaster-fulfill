@@ -29,6 +29,7 @@
     "ramda": "^0.22.1"
   },
   "devDependencies": {
+    "babel": "^6.5.2",
     "botmaster": "^2.2.3",
     "botmaster-test": "0.0.2",
     "eslint": "^3.12.2",

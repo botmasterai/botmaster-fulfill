@@ -70,19 +70,25 @@ const evalActions = (tree, actions, context, tasks = []) => {
             tasks.push(R.merge(
                 actions[el.tag],
                 {
-                    params: {
+                    params: R.merge(
                         context,
-                        attributes: el.attrs || {},
-                        get content() {
-                            return render(el.content);
-                        },
-                        get before() {
-                            return render(tree.slice(0, index));
-                        },
-                        get after() {
-                            return render(tree.slice(index + 1));
+                        {
+                            index,
+                            attributes: el.attrs || {},
+                            get tag() {
+                                return render(el);
+                            },
+                            get content() {
+                                return render(el.content);
+                            },
+                            get before() {
+                                return render(tree.slice(0, index));
+                            },
+                            get after() {
+                                return render(tree.slice(index + 1));
+                            }
                         }
-                    },
+                    ),
                     index,
                     name: el.tag,
                     el
