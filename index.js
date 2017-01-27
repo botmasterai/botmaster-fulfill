@@ -3,9 +3,9 @@
  */
 
 const {fulfill} = require('./fulfill');
-const {outgoing} = require('./outgoing');
+const {fulfillOutgoingWare} = require('./fulfill-outgoing-ware');
 
 module.exports = {
-    outgoing,
+    fulfillOutgoingWare,
     fulfill
 };

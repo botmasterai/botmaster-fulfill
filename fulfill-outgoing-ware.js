@@ -21,7 +21,7 @@ const defaultResponseToUpdate = (update, response) => {
  * @param  {Object} options.updateToResponse optional, a function that receives the botmaster (bot, update} and turns into the fulfill response
  * @return {function}         outgoing middleware
  */
-const outgoing = options => (bot, update, next) => {
+const fulfillOutgoingWare = options => (bot, update, next) => {
     debug(`fulfill received update: ${JSON.stringify(update)}`);
     const {
         actions = {},
@@ -50,5 +50,5 @@ const outgoing = options => (bot, update, next) => {
 };
 
 module.exports = {
-    outgoing
+    fulfillOutgoingWare
 };

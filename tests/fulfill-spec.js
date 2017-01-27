@@ -43,7 +43,7 @@ describe('fulfill', () => {
                     }
                 };
                 fulfill(actions, {}, '<hi/>', done);
-            })
+            });
         });
 
         describe('params.after', () => {
@@ -171,7 +171,7 @@ describe('fulfill', () => {
                 }
             };
             const context = {};
-            fulfill(actions, context, '<foo /> and <bar />', err => {
+            fulfill(actions, {context}, '<foo /> and <bar />', err => {
                 if (err) throw err;
                 context.should.eql({
                     foo: 1,

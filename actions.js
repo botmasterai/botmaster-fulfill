@@ -29,15 +29,14 @@ const clearNodes = (start, end, tree) => R.range(start, end).forEach(i => { tree
 const getTasks = (tree, actions, context) => {
     const tasks = evalActions(tree, actions, context);
     return {
-        series: R.compose(R.map(actionTask(context, tree)), seriesActions)(tasks),
-        parallel: R.compose(R.map(actionTask(context, tree)), parallelActions)(tasks)
+        series: R.compose(R.map(createTask(tree)), seriesActions)(tasks),
+        parallel: R.compose(R.map(createTask(tree)), parallelActions)(tasks)
     };
 };
 
 
 // create an async task by taking the "task" spec which specifies a certain action
-const actionTask = (context, tree) => task => cb => {
-    task.params.context = context;
+const createTask = (tree) => task => cb => {
     const internalCallback = (error, response) => {
         debug(`${task.name} ${task.index} got a response ${response}`);
         task.response = response || '';
@@ -63,6 +62,29 @@ const actionTask = (context, tree) => task => cb => {
     }
 };
 
+const makeParams = (index, el, tree, context) => {
+    const params = {
+        index,
+        attributes: el.attrs || {},
+        get tag() {
+            return render(el);
+        },
+        get content() {
+            return render(el.content);
+        },
+        get before() {
+            return render(tree.slice(0, index));
+        },
+        get after() {
+            return render(tree.slice(index + 1));
+        }
+    };
+    for (let prop in context) {
+        params[prop] = context[prop];
+    }
+    return params;
+};
+
 // get a list of all action tags of a particular type along with their params
 const evalActions = (tree, actions, context, tasks = []) => {
     tree.forEach( (el, index) => {
@@ -70,25 +92,7 @@ const evalActions = (tree, actions, context, tasks = []) => {
             tasks.push(R.merge(
                 actions[el.tag],
                 {
-                    params: R.merge(
-                        context,
-                        {
-                            index,
-                            attributes: el.attrs || {},
-                            get tag() {
-                                return render(el);
-                            },
-                            get content() {
-                                return render(el.content);
-                            },
-                            get before() {
-                                return render(tree.slice(0, index));
-                            },
-                            get after() {
-                                return render(tree.slice(index + 1));
-                            }
-                        }
-                    ),
+                    params: makeParams(index, el, tree, context),
                     index,
                     name: el.tag,
                     el
