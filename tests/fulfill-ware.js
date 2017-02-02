@@ -1,4 +1,4 @@
-const {FulfillWare} = require('../fulfill-outgoing-ware');
+const {FulfillWare} = require('../FulfillWare');
 require('should');
 
 describe('fulfill outgoing ware', () => {

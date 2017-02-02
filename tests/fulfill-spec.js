@@ -46,6 +46,23 @@ describe('fulfill', () => {
             });
         });
 
+        describe('params.index', () => {
+            it('it should give the index of the element only taking into consideration other elements of the same tag', done => {
+                let i = 0;
+                const actions = {
+                    series: true,
+                    a: {
+                        controller: ({index}) => {
+                            index.should.equal(i);
+                            i += 1;
+                            return '';
+                        }
+                    }
+                };
+                fulfill(actions, {}, 'boop <a /> bop beep <b /> <a /> <c /> boop <a />', done);
+            });
+        });
+
         describe('params.after', () => {
             it('it should pass " ! <how/> are you?" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', done => {
                 const actions = {

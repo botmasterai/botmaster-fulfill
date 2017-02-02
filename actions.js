@@ -24,25 +24,22 @@ const seriesActions = R.filter(R.prop('series'));
 const parallelActions = R.filter(R.compose(R.not, R.prop('series')));
 const isSync = R.allPass([x => !R.isNil(x), R.anyPass([R.is(String), R.is(Number)])]);
 const clearNodes = (start, end, tree) => R.range(start, end).forEach(i => { tree[i] = '';});
-const addIndex = (num, key, obj) => R.set(R.prop('index', key), obj);
 
 // get an object specifying serial and parallal tasks and their async task and promise subtypes
 const getTasks = (tree, actions, context) => {
     const tasks = evalActions(tree, actions, context);
     return {
-        series: R.compose(R.map(createTask(tree)), seriesActions)(tasks),
-        parallel: R.compose(R.map(createTask(tree)), parallelActions)(tasks)
+        series: R.compose(R.map(createTask), seriesActions)(tasks),
+        parallel: R.compose(R.map(createTask), parallelActions)(tasks)
     };
 };
 
 
 // create an async task by taking the "task" spec which specifies a certain action
-const createTask = (tree) => task => cb => {
+const createTask = task => cb => {
     const internalCallback = (error, response) => {
         debug(`${task.name} ${task.index} got a response ${response}`);
         task.response = response || '';
-        evalResponse(tree, task);
-        debug(`tree is now ${JSON.stringify(tree)}`);
         return cb(error, task);
     };
     try {
@@ -68,10 +65,11 @@ const makeParams = (index, el, tree, context) => {
         attributes: el.attrs || {},
         get index() {
             return R.compose(
-                R.findIndex(R.propEq('index', index)), // then find our original element and its index
+                R.findIndex(R.propEq('index', ''+index)),
+                R.values(),
                 R.filter(R.propEq('tag', el.tag)), // then filter for elements in the tree that are the same as the current one
-                R.mapObjIndexed(addIndex) // first add the original index as a property
-            );
+                R.mapObjIndexed((val, key) => R.set(R.lensProp('index'), key, val))
+            )(tree);
         },
         get tag() {
             return render(el);
@@ -111,7 +109,7 @@ const evalActions = (tree, actions, context, tasks = []) => {
 };
 
 
-// update the cheerio object with the responses from a particular action
+// update the tree the responses from a particular action
 const evalResponse = (tree, task) => {
     if (typeof task.replace == 'function')
         task.replace(tree, task);
@@ -140,5 +138,6 @@ const evalResponse = (tree, task) => {
 
 module.exports = {
     getTasks,
-    isPendingActions
+    isPendingActions,
+    evalResponse
 };
