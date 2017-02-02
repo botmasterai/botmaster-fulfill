@@ -1,4 +1,4 @@
-const {FulfillOutgoingWare} = require('../fulfill-outgoing-ware');
+const {FulfillWare} = require('../fulfill-outgoing-ware');
 require('should');
 
 describe('fulfill outgoing ware', () => {
@@ -9,7 +9,7 @@ describe('fulfill outgoing ware', () => {
                 controller: () => 'hi world'
             }
         };
-        const ware = FulfillOutgoingWare({actions});
+        const ware = FulfillWare({actions});
         const update = {message: {text: '<hi />'}};
         const bot = {type: 'not a real bot'};
         ware(
@@ -36,7 +36,7 @@ describe('fulfill outgoing ware', () => {
                 }
             }
         };
-        const ware = FulfillOutgoingWare({actions});
+        const ware = FulfillWare({actions});
         const update = {message: {text: '<hi />'}};
         const bot = {type: 'not a real bot'};
         ware(

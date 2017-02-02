@@ -4,7 +4,7 @@
 
 const R = require('ramda');
 const {fulfill} = require('./fulfill');
-const debug = require('debug')('botmaster:fulfill:outgoing');
+const debug = require('debug')('botmaster:ware:fulfill');
 
 // Utility functions for working with botmaster
 const textLens = R.lensPath(['update', 'message', 'text']);
@@ -21,7 +21,7 @@ const defaultResponseToUpdate = (update, response) => {
  * @param  {Object} options.updateToResponse optional, a function that receives the botmaster (bot, update} and turns into the fulfill response
  * @return {function}         outgoing middleware
  */
-const FulfillOutgoingWare = options => (bot, update, next) => {
+const FulfillWare = options => (bot, update, next) => {
     debug(`fulfill received update: ${JSON.stringify(update)}`);
     const {
         actions = {},
@@ -50,5 +50,5 @@ const FulfillOutgoingWare = options => (bot, update, next) => {
 };
 
 module.exports = {
-    FulfillOutgoingWare
+    FulfillWare
 };

@@ -6,7 +6,7 @@ const {parallel, series, apply} = require('async');
 const {getTasks, isPendingActions:__isPendingActions } = require('./actions');
 const __parse = require('posthtml-parser');
 const render = require('posthtml-render');
-const debug = require('debug')('botmaster:fulfill');
+const debug = require('debug')('botmaster:ware:fulfill:parse');
 
 const parseOptions = {
     xmlMode: true,

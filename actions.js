@@ -4,7 +4,7 @@
 
 const R = require('ramda');
 const { nextTick} = require('async');
-const debug = require('debug')('botmaster:fulfill:actions');
+const debug = require('debug')('botmaster:ware:fulfill:actions');
 const render = require('posthtml-render');
 
 // ramda-style utils for procesing action arrays
@@ -24,6 +24,7 @@ const seriesActions = R.filter(R.prop('series'));
 const parallelActions = R.filter(R.compose(R.not, R.prop('series')));
 const isSync = R.allPass([x => !R.isNil(x), R.anyPass([R.is(String), R.is(Number)])]);
 const clearNodes = (start, end, tree) => R.range(start, end).forEach(i => { tree[i] = '';});
+const addIndex = (num, key, obj) => R.set(R.prop('index', key), obj);
 
 // get an object specifying serial and parallal tasks and their async task and promise subtypes
 const getTasks = (tree, actions, context) => {
@@ -64,8 +65,14 @@ const createTask = (tree) => task => cb => {
 
 const makeParams = (index, el, tree, context) => {
     const params = {
-        index,
         attributes: el.attrs || {},
+        get index() {
+            return R.compose(
+                R.findIndex(R.propEq('index', index)), // then find our original element and its index
+                R.filter(R.propEq('tag', el.tag)), // then filter for elements in the tree that are the same as the current one
+                R.mapObjIndexed(addIndex) // first add the original index as a property
+            );
+        },
         get tag() {
             return render(el);
         },
