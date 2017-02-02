@@ -1,4 +1,4 @@
-const {fulfillOutgoingWare} = require('../');
+const {FulfillOutgoingWare} = require('../');
 const {
     botmaster,
     telegramMock,
@@ -16,7 +16,7 @@ describe('botmaster-fulfill', () => {
     }));
 
     it('it should say hello world!', done => {
-        myBotmaster.use('outgoing', fulfillOutgoingWare({
+        myBotmaster.use('outgoing', FulfillOutgoingWare({
             actions: {
                 hi: {
                     controller: () => 'hello world!!'
@@ -35,7 +35,7 @@ describe('botmaster-fulfill', () => {
 
     describe('emitting messages', () => {
         it('it should send two messages', done => {
-            myBotmaster.use('outgoing', fulfillOutgoingWare({
+            myBotmaster.use('outgoing', FulfillOutgoingWare({
                 actions: {
                     send: {
                         controller: params => params.bot

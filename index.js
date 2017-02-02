@@ -3,10 +3,11 @@
  */
 
 const {fulfill, isPendingActions} = require('./fulfill');
-const {fulfillOutgoingWare} = require('./fulfill-outgoing-ware');
+const {FulfillOutgoingWare} = require('./fulfill-outgoing-ware');
 
 module.exports = {
-    fulfillOutgoingWare,
+    Outgoing: FulfillOutgoingWare,
+    FulfillOutgoingWare,
     fulfill,
     isPendingActions
 };
