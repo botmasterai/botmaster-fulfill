@@ -1,6 +1,6 @@
 {
   "name": "botmaster-fulfill",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Declarative markup API and engine to integrate internal or external APIs with botmaster",
   "main": "./index.js",
   "scripts": {
