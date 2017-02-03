@@ -1,12 +1,11 @@
 {
   "name": "botmaster-fulfill",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Declarative markup API and engine to integrate internal or external APIs with botmaster",
   "main": "./index.js",
   "scripts": {
     "test": "mocha --recursive ./tests",
     "docs": "documentation-readme -s \"API Reference\""
-
   },
   "repository": {
     "type": "git",
@@ -31,13 +30,11 @@
     "ramda": "^0.22.1"
   },
   "devDependencies": {
-    "botmaster": "git+https://github.com/botmasterai/botmaster.git",
     "botmaster": "^2.2.3",
     "botmaster-test": "0.0.2",
     "eslint": "^3.12.2",
     "mocha": "^3.1.0",
     "should": "^11.1.0",
     "documentation-readme": "^2.1.1"
-
   }
 }
