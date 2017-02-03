@@ -10,7 +10,7 @@ const debug = require('debug')('botmaster:ware:fulfill');
 const textLens = R.lensPath(['update', 'message', 'text']);
 const defaultUpdateToInput= R.view(textLens);
 const defaultResponseToUpdate = (update, response) => {
-    update.message.text = response; // can't use immutable paradigms here unfortunately
+    update.message.text = response.trim(' '); // can't use immutable paradigms here unfortunately
     return R.isEmpty(update.message.text) == false;
 };
 
