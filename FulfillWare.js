@@ -1,5 +1,6 @@
 /**
  *  Botmaster middleware generating function to connect fulfill to botmaster as outgoing middleware.
+ *  @private
  */
 
 const R = require('ramda');

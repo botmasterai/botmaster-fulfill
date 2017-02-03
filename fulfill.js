@@ -1,5 +1,6 @@
 /**
- * main module for fulfill, defining the overall fulfill process
+ *  Main module for fulfill, defining the overall fulfill process
+ *  @private
  */
 
 const R = require('ramda');
@@ -17,8 +18,23 @@ const parseOptions = {
 };
 
 const parse = string => __parse(string, parseOptions);
+
+/**
+ * Test for remaining actions in a string
+ * @param  {String}  string  input string to test for actions
+ * @param  {Object}  actions actions to test for
+ * @return {Boolean} whether any actions were found
+ */
 const isPendingActions = (string, actions) => __isPendingActions(parse(string), actions);
 
+/**
+ * Fulfill any actions found in the input text
+ * @param  {Object} actions actions to run
+ * @param  {Object} context an object of aditional properties to expost though `params`
+ * @param  {String} input the string to look for actions in
+ * @param  {Array}  [tree] provided as a way to speed up recursion. You probably don't need to use this.
+ * @param  {Function} cb error first callback
+ */
 const fulfill = (actions, context, input, tree, cb) => {
     if (!cb) {
         cb = tree;

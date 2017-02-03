@@ -1,5 +1,6 @@
 /**
  *  Functions to find actions and evaluate them
+ *  @private
  */
 
 const R = require('ramda');
@@ -8,8 +9,6 @@ const debug = require('debug')('botmaster:ware:fulfill:actions');
 const render = require('posthtml-render');
 
 // ramda-style utils for procesing action arrays
-//const defaultToString = R.defaultTo('');
-//const cleanString = R.compose(R.trim, defaultToString);
 const setName = (val, key) => R.set(R.lensProp('name'), key)(val);
 const indexActionName = R.mapObjIndexed(setName);
 const toArray = R.compose(R.values, indexActionName);
@@ -19,7 +18,6 @@ const getPendingActions = (tree, actions) => R.filter(R.curry(actionApplies)(tre
 const mapToNames = R.map(R.prop('name'));
 const getPendingActionNames = (tree, actions) => R.compose(mapToNames, R.curry(getPendingActions)(tree))(actions);
 const isPendingActions = (tree, actions) => getPendingActionNames(tree, checkArray(actions)).length > 0;
-//const getPendingActionSelectors = (tree, actions) => R.compose(R.join(', '), R.curry(getPendingActionNames)(tree))(actions);
 const seriesActions = R.filter(R.prop('series'));
 const parallelActions = R.filter(R.compose(R.not, R.prop('series')));
 const isSync = R.allPass([x => !R.isNil(x), R.anyPass([R.is(String), R.is(Number)])]);
