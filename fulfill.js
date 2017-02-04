@@ -49,7 +49,13 @@ const fulfill = (actions, context, input, tree, cb) => {
     ], (err, responses) => {
         if (err) cb(err);
         else {
-            R.map(R.curry(evalResponse)(tree, R.__), R.flatten(responses));
+            R.forEach(
+                R.curry(evalResponse)(tree, R.__),
+                R.compose(
+                    R.filter(R.propSatisfies(evaluate => evaluate !== 'step', 'evaluate')),
+                    R.flatten
+                )(responses)
+            );
             debug(`tree is now ${JSON.stringify(tree)}`);
             const response = render(tree);
             tree = parse(response);

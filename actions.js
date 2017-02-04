@@ -27,17 +27,21 @@ const clearNodes = (start, end, tree) => R.range(start, end).forEach(i => { tree
 const getTasks = (tree, actions, context) => {
     const tasks = evalActions(tree, actions, context);
     return {
-        series: R.compose(R.map(createTask), seriesActions)(tasks),
-        parallel: R.compose(R.map(createTask), parallelActions)(tasks)
+        series: R.compose(R.map(createTask(tree)), seriesActions)(tasks),
+        parallel: R.compose(R.map(createTask(tree)), parallelActions)(tasks)
     };
 };
 
 
 // create an async task by taking the "task" spec which specifies a certain action
-const createTask = task => cb => {
+const createTask = tree => task => cb => {
     const internalCallback = (error, response) => {
         debug(`${task.name} ${task.index} got a response ${response}`);
         task.response = response || '';
+        if (task.evaluate == 'step') {
+            evalResponse(tree, task);
+            debug(`tree is now ${JSON.stringify(tree)}`);
+        }
         return cb(error, task);
     };
     try {

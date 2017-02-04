@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/botmasterai/botmaster-fulfill.svg?branch=master)](https://travis-ci.org/botmasterai/botmaster-fulfill)
+
 # Botmaster fulfill
 
 Battle-tested middleware for botmaster <https://botmasterai.github.io/>).
