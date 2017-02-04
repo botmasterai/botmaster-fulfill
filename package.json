@@ -4,7 +4,9 @@
   "description": "Declarative markup API and engine to integrate internal or external APIs with botmaster",
   "main": "./index.js",
   "scripts": {
-    "test": "mocha --recursive ./tests",
+    "test": "istanbul cover _mocha -- --recursive tests",
+    "tests": "mocha --recursive tests",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "docs": "documentation-readme -s \"API Reference\""
   },
   "repository": {
@@ -30,11 +32,14 @@
     "ramda": "^0.22.1"
   },
   "devDependencies": {
-    "botmaster": "^2.2.3",
+    "botmaster": "git+https://github.com/botmasterai/botmaster.git",
     "botmaster-test": "0.0.2",
+    "coveralls": "^2.11.15",
+    "documentation-readme": "^2.1.1",
     "eslint": "^3.12.2",
+    "istanbul": "^0.4.5",
     "mocha": "^3.1.0",
-    "should": "^11.1.0",
-    "documentation-readme": "^2.1.1"
+    "mocha-lcov-reporter": "^1.2.0",
+    "should": "^11.1.0"
   }
 }
