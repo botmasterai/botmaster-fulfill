@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/botmasterai/botmaster-fulfill.svg?branch=master)](https://travis-ci.org/botmasterai/botmaster-fulfill)
+[![Coverage Status](https://coveralls.io/repos/github/botmasterai/botmaster-fulfill-actions/badge.svg?branch=master)](https://coveralls.io/github/botmasterai/botmaster-fulfill-actions?branch=master)
 
 # Botmaster fulfill
 
@@ -6,7 +7,8 @@ Battle-tested middleware for botmaster <https://botmasterai.github.io/>).
 
 Enable chatbots to perform actions on Node.js.
 
-Find the documentation at the main botmaster website: <https://botmasterai.github.io/official-middleware/fulfill/>
+Find the documentation at the main botmaster website: <http://botmasterai.com/middlewares/fulfill/>
+
 
 ## API Reference
 
