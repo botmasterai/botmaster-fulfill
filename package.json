@@ -2,7 +2,7 @@
   "name": "botmaster-fulfill",
   "version": "2.1.2",
   "description": "Declarative markup API and engine to integrate internal or external APIs with botmaster",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "pretest": "npm run build",
     "test": "istanbul cover _mocha -- --recursive dist/tests",
