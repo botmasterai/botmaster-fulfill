@@ -9,7 +9,7 @@
     "tests": "mocha --recursive src/tests",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build": "mkdir -p dist && babel --presets=es2015,babili src --out-dir dist",
-    "docs": "documentation readme src/index.js --section=\"API Refereence\"",
+    "docs": "documentation readme src/index.js --section=\"API Reference\"",
     "prepublish": "npm run build"
   },
   "repository": {
