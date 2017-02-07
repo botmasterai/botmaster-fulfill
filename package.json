@@ -5,10 +5,10 @@
   "main": "./dist/index.js",
   "scripts": {
     "pretest": "npm run build",
-    "test": "istanbul cover _mocha -- --recursive tests",
-    "tests": "mocha --recursive tests",
+    "test": "istanbul cover _mocha -- --recursive dist/tests",
+    "tests": "mocha --recursive src/tests",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "build": "mkdir -p dist && babel --presets es2015,babili src --out-dir dist",
+    "build": "mkdir -p dist && babel --presets=es2015,babili src --out-dir dist",
     "docs": "documentation-readme -s \"API Reference\"",
     "prepublish": "npm run build"
   },

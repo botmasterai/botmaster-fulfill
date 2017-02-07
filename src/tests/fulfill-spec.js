@@ -1,7 +1,7 @@
 const should = require('should');
 const {
     fulfill
-} = require('../dist');
+} = require('../');
 
 describe('fulfill', () => {
 

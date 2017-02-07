@@ -1,4 +1,4 @@
-const {FulfillWare} = require('../dist');
+const {FulfillWare} = require('../');
 require('should');
 
 describe('fulfill outgoing ware', () => {
