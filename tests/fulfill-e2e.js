@@ -1,4 +1,4 @@
-const {FulfillWare} = require('../');
+const {FulfillWare} = require('../dist');
 const {
     botmaster,
     telegramMock,

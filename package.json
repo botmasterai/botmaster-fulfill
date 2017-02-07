@@ -2,12 +2,15 @@
   "name": "botmaster-fulfill",
   "version": "2.0.8",
   "description": "Declarative markup API and engine to integrate internal or external APIs with botmaster",
-  "main": "./index.js",
+  "main": "./dist/index.js",
   "scripts": {
+    "pretest": "npm run build",
     "test": "istanbul cover _mocha -- --recursive tests",
     "tests": "mocha --recursive tests",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "docs": "documentation-readme -s \"API Reference\""
+    "build": "mkdir -p dist && babel --presets es2015,babili src --out-dir dist",
+    "docs": "documentation-readme -s \"API Reference\"",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -32,6 +35,9 @@
     "ramda": "^0.22.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-preset-babili": "0.0.10",
+    "babel-preset-es2015": "^6.22.0",
     "botmaster": "git+https://github.com/botmasterai/botmaster.git",
     "botmaster-test": "0.0.2",
     "coveralls": "^2.11.15",
