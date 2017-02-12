@@ -34,6 +34,9 @@
     "posthtml-render": "^1.0.6",
     "ramda": "^0.22.1"
   },
+  "peerDependencies": {
+      "botmaster": ">= 2.1.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.22.2",
     "babel-preset-babili": "0.0.10",

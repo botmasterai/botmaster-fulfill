@@ -7,7 +7,42 @@ Battle-tested middleware for botmaster <https://botmasterai.github.io/>).
 
 Enable chatbots to perform actions on Node.js.
 
-Find the documentation at the main botmaster website: <http://botmasterai.com/middlewares/fulfill/>
+Developers write "action specs" that specify how an XML tag should be replaced in a chatbot response, such as confirming that the action was performed simply returning an empty string so that the tag is removed.
+
+Chatbot designers then place the XML tags in their flows for easy integration.
+
+<!--
+Find the full documentation at the main botmaster website: <http://botmasterai.com/middlewares/fulfill/>
+-->
+
+Also check out our pre-made actions:
+
+| Actions        | Repository                                                                            |
+|----------------|---------------------------------------------------------------------------------------|
+|pause, greet    | [botmaster-fulfill-actions](https://github.com/botmasterai/botmaster-fulfill-actions) |
+|button, buttons | [botmaster-button](https://github.com/botmasterai/botmaster-button)                   |
+
+
+## Quick start
+
+```js
+const Botmaster = require('botmaster');
+const {fulfillOutgoingWare} = require('botmaster-fulfill');
+const botsSettings = require('./my-bots-settings');
+const botmaster = new Botmaster({botsSettings});
+const actions = {
+        hi: {
+            controller: () => 'hi there!'
+        },
+        bye: {
+            controller: () => 'bye please come again'
+        }
+}
+botmaster.use('outgoing', outgoing({actions}));
+botmaster.once('update', bot => bot.sendMessage('<hi />'));
+botmaster.once('update', bot => bot.sendMessage('<bye />'));
+```
+
 
 ## API Reference
 

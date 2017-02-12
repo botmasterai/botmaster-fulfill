@@ -144,6 +144,23 @@ describe('fulfill', () => {
                     });
                 });
 
+                it('it should handle when an action replaces another action', done => {
+                    const actions = {
+                        hi: {
+                            replace: 'before',
+                            controller: () => 'hi'
+                        },
+                        ignore: {
+                            controller: () => 'this should not appear'
+                        }
+                    };
+                    fulfill(actions, {}, '<ignore /><hi />', (err, result) => {
+                        if (err) throw err;
+                        result.should.equal('hi');
+                        done();
+                    });
+                });
+
             });
         });
         describe('options.series', () => {

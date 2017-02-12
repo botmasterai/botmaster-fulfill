@@ -113,7 +113,10 @@ const evalActions = (tree, actions, context, tasks = []) => {
 
 // update the tree the responses from a particular action
 const evalResponse = (tree, task) => {
-    if (typeof task.replace == 'function')
+    // check if another task modified this task
+    if (! tree[task.index] || ! tree[task.index].tag || tree[task.index].tag !== task.name)
+        return tree[task.index];
+    else if (typeof task.replace == 'function')
         task.replace(tree, task);
     else {
         switch (task.replace) {
