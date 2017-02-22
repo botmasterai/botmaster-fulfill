@@ -3,6 +3,7 @@ const {
     botmaster,
     telegramMock,
     respond,
+    incomingUpdate,
     outgoingMessage
 } = require('botmaster-test');
 
@@ -52,8 +53,54 @@ describe('botmaster-fulfill', () => {
                 });
         });
 
+
+
     });
 
+    describe('middleware specific params', () => {
+        it('it should have the update that was sent', done => {
+            myBotmaster.use('outgoing', FulfillWare({
+                actions: {
+                    send: {
+                        controller: ({update}) => {
+                            if (update.message.text == 'hi bob')
+                                return 'worked';
+                            else
+                                return 'did not work';
+                        }
+                    }
+                }
+            }));
+            respond(myBotmaster)('<send></send>');
+            myBotmaster.on('error', (bot, error) => done(new Error(`botmaster error: ${error}`)));
+            myTelegramMock
+                .expect(['worked'], done)
+                .sendUpdate('hi bob', err => {
+                    if (err) done(new Error('supertest error: ' + err));
+                });
+        });
+        it('it should have the message that was sent', done => {
+            myBotmaster.use('outgoing', FulfillWare({
+                actions: {
+                    send: {
+                        controller: ({message})=> {
+                            if (message.message.text == '<send></send>')
+                                return 'worked';
+                            else
+                                return 'did not work';
+                        }
+                    }
+                }
+            }));
+            respond(myBotmaster)('<send></send>');
+            myBotmaster.on('error', (bot, error) => done(new Error(`botmaster error: ${error}`)));
+            myTelegramMock
+                .expect(['worked'], done)
+                .sendUpdate('hi bob', err => {
+                    if (err) done(new Error('supertest error: ' + err));
+                });
+        });
+    });
     afterEach(function(done) {
         this.retries(4);
         process.nextTick(() => {

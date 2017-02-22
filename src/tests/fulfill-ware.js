@@ -10,14 +10,15 @@ describe('fulfill outgoing ware', () => {
             }
         };
         const ware = FulfillWare({actions});
-        const update = {message: {text: '<hi />'}};
+        const message = {message: {text: '<hi />'}};
         const bot = {type: 'not a real bot'};
         ware(
             bot,
-            update,
+            {},
+            message,
             (err) => {
                 if (err) return done(err);
-                update.message.text.should.equal('hi world');
+                message.message.text.should.equal('hi world');
                 done();
             }
             );
@@ -37,11 +38,12 @@ describe('fulfill outgoing ware', () => {
             }
         };
         const ware = FulfillWare({actions});
-        const update = {message: {text: '<hi />'}};
+        const message = {message: {text: '<hi />'}};
         const bot = {type: 'not a real bot'};
         ware(
             bot,
-            update,
+            {},
+            message,
             (err) => {
                 if (err) return done(err);
                 done();

@@ -8,38 +8,40 @@ const {fulfill} = require('./fulfill');
 const debug = require('debug')('botmaster:ware:fulfill');
 
 // Utility functions for working with botmaster
-const textLens = R.lensPath(['update', 'message', 'text']);
-const defaultUpdateToInput= R.view(textLens);
-const defaultResponseToUpdate = (update, response) => {
-    update.message.text = response ? response.trim(' ') : '';
-    return R.isEmpty(update.message.text) == false;
+const textLens = R.lensPath(['message', 'message', 'text']);
+const defaultInput= R.view(textLens);
+const defaultResponse = ({message, response}) => {
+    message.message.text = response ? response.trim(' ') : '';
+    return R.isEmpty(message.message.text) == false;
 };
 
 /**
  * Generate outgoing middleware for fulfill
  * @param  {Object} options.actions the actions to use
- * @param  {Object} options.updateToContext optional, a function that receives the botmaster {bot, update} and turns into the fulfill context
- * @param  {Object} options.updateToResponse optional, a function that receives the botmaster (bot, update} and turns into the fulfill response
+ * @param  {Function} [options.inputTransformer] a function that receives {bot, message, update} and returns the fulfill input
+ * @param  {Function} [options.reponseTransformer] a function that receives (bot, message, update, reponse} updates the message
+ * @param {Object} [options.params] an object of additional names to provide in params.
  * @return {function}         outgoing middleware
  */
-const FulfillWare = options => (bot, update, next) => {
+const FulfillWare = options => (bot, update, message, next) => {
     debug(`fulfill received update: ${JSON.stringify(update)}`);
     const {
         actions = {},
-        updateToInput = defaultUpdateToInput,
-        responseToUpdate = defaultResponseToUpdate,
-        context = {}
+        inputTransformer = defaultInput,
+        reponseTransformer = defaultResponse,
+        params = {}
     } = options;
     debug(`fulfill using actions: ${JSON.stringify(actions)}`);
-    debug(`fulfill using as input: ${updateToInput({bot, update})}`);
-    context.bot = bot;
-    context.update = update;
+    debug(`fulfill using as input: ${inputTransformer({bot, message})}`);
+    params.bot = bot;
+    params.update = update;
+    params.message = message;
     fulfill(
         options.actions,
-        context,
-        updateToInput({bot, update}),
+        params,
+        inputTransformer({bot, update, message}),
         (error, response) => {
-            const nonEmptyUpdate = responseToUpdate(update, response);
+            const nonEmptyUpdate = reponseTransformer({update, message, response});
             if (nonEmptyUpdate) {
                 next(error);
                 debug(`fulfill sent new update: ${JSON.stringify(update)}`);
