@@ -41,10 +41,10 @@ const FulfillWare = options => (bot, update, message, next) => {
         params,
         inputTransformer({bot, update, message}),
         (error, response) => {
-            const nonEmptyUpdate = reponseTransformer({update, message, response});
-            if (nonEmptyUpdate) {
+            const nonEmpty = reponseTransformer({message, response});
+            if (nonEmpty) {
                 next(error);
-                debug(`fulfill sent new update: ${JSON.stringify(update)}`);
+                debug(`fulfill sent new message: ${JSON.stringify(message)}`);
             } else {
                 debug('no final update to send');
             }

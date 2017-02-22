@@ -49,10 +49,10 @@ var FulfillWare = function FulfillWare(options) {
         params.update = update;
         params.message = message;
         fulfill(options.actions, params, inputTransformer({ bot: bot, update: update, message: message }), function (error, response) {
-            var nonEmptyUpdate = reponseTransformer({ update: update, message: message, response: response });
-            if (nonEmptyUpdate) {
+            var nonEmpty = reponseTransformer({ message: message, response: response });
+            if (nonEmpty) {
                 next(error);
-                debug('fulfill sent new update: ' + JSON.stringify(update));
+                debug('fulfill sent new message: ' + JSON.stringify(message));
             } else {
                 debug('no final update to send');
             }
