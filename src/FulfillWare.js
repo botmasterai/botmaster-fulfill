@@ -19,12 +19,12 @@ const defaultResponse = ({message, response}) => {
  * Generate outgoing middleware for fulfill
  * @param  {Object} options.actions the actions to use
  * @param  {Function} [options.inputTransformer] a function that receives {bot, message, update} and returns the fulfill input
- * @param  {Function} [options.reponseTransformer] a function that receives (bot, message, update, reponse} updates the message
+ * @param  {Function} [options.reponseTransformer] a function that receives {bot, message, update, response} updates the message
  * @param {Object} [options.params] an object of additional names to provide in params.
  * @return {function}         outgoing middleware
  */
 const FulfillWare = options => (bot, update, message, next) => {
-    debug(`fulfill received update: ${JSON.stringify(update)}`);
+    debug(`fulfill received message: ${JSON.stringify(message)}`);
     const {
         actions = {},
         inputTransformer = defaultInput,
@@ -41,13 +41,13 @@ const FulfillWare = options => (bot, update, message, next) => {
         params,
         inputTransformer({bot, update, message}),
         (error, response) => {
-            const nonEmpty = reponseTransformer({message, response});
+            const nonEmpty = reponseTransformer({bot, message, update, response});
             if (nonEmpty) {
-                next(error);
                 debug(`fulfill sent new message: ${JSON.stringify(message)}`);
             } else {
-                debug('no final update to send');
+                debug('no final message to send');
             }
+            next(error);
         }
     );
 };
