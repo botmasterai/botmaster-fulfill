@@ -73,6 +73,20 @@ describe('fulfill', function () {
             });
         });
 
+        describe('params.all', function () {
+            it('it should pass "hi  !  are you?" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', function (done) {
+                var actions = {
+                    bob: {
+                        controller: function controller(params) {
+                            params.all.should.equal('hi   !  are you?');
+                            done();
+                        }
+                    }
+                };
+                fulfill(actions, {}, 'hi <there /> <bob /> ! <how /> are you?', done);
+            });
+        });
+
         describe('params.after', function () {
             it('it should pass " ! <how/> are you?" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', function (done) {
                 var actions = {
@@ -116,6 +130,24 @@ describe('fulfill', function () {
 
     describe('controller options', function () {
         describe('options.replace', function () {
+
+            describe('replace = "all"', function () {
+                it('it should return "swallowed" for an input "stuff to ignore <swallow /> more stuff to ignore" ', function (done) {
+                    var actions = {
+                        swallow: {
+                            replace: 'all',
+                            controller: function controller() {
+                                return 'swallowed';
+                            }
+                        }
+                    };
+                    fulfill(actions, {}, 'stuff to ignore <swallow /> more stuff to ignore', function (err, result) {
+                        if (err) throw err;
+                        result.should.equal('swallowed');
+                        done();
+                    });
+                });
+            });
             describe('replace = "before"', function () {
                 it('it should return "hi bob for an input "gibberish <hi /> bob <ignore />"', function (done) {
                     var actions = {
@@ -392,6 +424,16 @@ describe('fulfill', function () {
         it('it should handle empty action spec', function (done) {
             fulfill({}, {}, '<hi/>', function (err, result) {
                 result.should.equal('<hi></hi>');
+                done();
+            });
+        });
+
+        it('it should handle an action spec that returns empty', function (done) {
+            actions.hi.controller = function () {
+                return '';
+            };
+            fulfill(actions, {}, 'hi <hi/>', function (err, result) {
+                result.should.equal('hi ');
                 done();
             });
         });

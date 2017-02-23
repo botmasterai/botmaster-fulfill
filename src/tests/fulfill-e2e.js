@@ -35,6 +35,23 @@ describe('botmaster-fulfill', () => {
     });
 
     describe('emitting messages', () => {
+        it('it should handle ignoring tags', done => {
+            myBotmaster.use('outgoing', FulfillWare({
+                actions: {
+                    ignore: {
+                        controller: () => ''
+                    }
+                }
+            }));
+            respond(myBotmaster)('hi<ignore />');
+            myBotmaster.on('error', (bot, error) => done(new Error(`botmaster error: ${error}`)));
+            myTelegramMock
+                .expect(['hi'], done)
+                .sendUpdate('hi bob', err => {
+                    if (err) done(new Error('supertest error: ' + err));
+                });
+        });
+
         it('it should send two messages', done => {
             myBotmaster.use('outgoing', FulfillWare({
                 actions: {

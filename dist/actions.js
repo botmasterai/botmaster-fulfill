@@ -97,6 +97,7 @@ var createTask = function createTask(tree) {
 var makeParams = function makeParams(index, el, tree, context) {
     var params = {
         attributes: el.attrs || {},
+        tree: tree,
         get index() {
             return R.compose(R.findIndex(R.propEq('index', '' + index)), R.values(), R.filter(R.propEq('tag', el.tag)), // then filter for elements in the tree that are the same as the current one
             R.mapObjIndexed(function (val, key) {
@@ -114,6 +115,11 @@ var makeParams = function makeParams(index, el, tree, context) {
         },
         get after() {
             return render(tree.slice(index + 1));
+        },
+        get all() {
+            return render(tree.filter(function (e) {
+                return !e.tag;
+            }));
         }
     };
     for (var prop in context) {
@@ -152,7 +158,8 @@ var evalResponse = function evalResponse(tree, task) {
                 tree[task.index] = task.response;
                 break;
             case 'all':
-                tree = [task.response];
+                tree.length = 0;
+                tree[0] = task.response;
                 break;
             default:
                 tree[task.index] = task.response;
