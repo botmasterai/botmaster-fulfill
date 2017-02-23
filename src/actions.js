@@ -65,6 +65,7 @@ const createTask = tree => task => cb => {
 const makeParams = (index, el, tree, context) => {
     const params = {
         attributes: el.attrs || {},
+        tree: tree,
         get index() {
             return R.compose(
                 R.findIndex(R.propEq('index', ''+index)),
@@ -84,6 +85,9 @@ const makeParams = (index, el, tree, context) => {
         },
         get after() {
             return render(tree.slice(index + 1));
+        },
+        get all() {
+            return render(tree.filter(e => !e.tag));
         }
     };
     for (let prop in context) {
@@ -129,7 +133,8 @@ const evalResponse = (tree, task) => {
                 tree[task.index] = task.response;
                 break;
             case 'all':
-                tree = [task.response];
+                tree.length = 0;
+                tree[0] = task.response;
                 break;
             default:
                 tree[task.index] = task.response;

@@ -63,6 +63,20 @@ describe('fulfill', () => {
             });
         });
 
+        describe('params.all', () => {
+            it('it should pass "hi  !  are you?" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', done => {
+                const actions = {
+                    bob: {
+                        controller: params => {
+                            params.all.should.equal('hi   !  are you?');
+                            done();
+                        }
+                    }
+                };
+                fulfill(actions, {}, 'hi <there /> <bob /> ! <how /> are you?', done);
+            });
+        });
+
         describe('params.after', () => {
             it('it should pass " ! <how/> are you?" to "bob" controller when given input "hi <there /> <bob /> ! <how /> are you?"', done => {
                 const actions = {
@@ -109,6 +123,23 @@ describe('fulfill', () => {
 
     describe('controller options', () => {
         describe('options.replace', () => {
+
+            describe('replace = "all"', () => {
+                it('it should return "swallowed" for an input "stuff to ignore <swallow /> more stuff to ignore" ', done => {
+                    const actions = {
+                        swallow: {
+                            replace: 'all',
+                            controller: () => 'swallowed'
+                        }
+                    };
+                    fulfill(actions, {}, 'stuff to ignore <swallow /> more stuff to ignore', (err, result) => {
+                        if (err) throw err;
+                        result.should.equal('swallowed');
+                        done();
+                    });
+                });
+
+            });
             describe('replace = "before"', () => {
                 it('it should return "hi bob for an input "gibberish <hi /> bob <ignore />"', done => {
                     const actions = {
@@ -344,6 +375,14 @@ describe('fulfill', () => {
         it('it should handle empty action spec', done => {
             fulfill({}, {}, '<hi/>', (err, result) => {
                 result.should.equal('<hi></hi>');
+                done();
+            });
+        });
+
+        it('it should handle an action spec that returns empty', done => {
+            actions.hi.controller = () => '';
+            fulfill(actions, {}, 'hi <hi/>', (err, result) => {
+                result.should.equal('hi ');
                 done();
             });
         });
