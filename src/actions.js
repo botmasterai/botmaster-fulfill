@@ -7,6 +7,7 @@ const R = require('ramda');
 const { nextTick} = require('async');
 const debug = require('debug')('botmaster:ware:fulfill:actions');
 const render = require('posthtml-render');
+const {Notifier} = require('./utils');
 
 // ramda-style utils for procesing action arrays
 const setName = (val, key) => R.set(R.lensProp('name'), key)(val);
@@ -23,18 +24,22 @@ const parallelActions = R.filter(R.compose(R.not, R.prop('series')));
 const isSync = R.allPass([x => !R.isNil(x), R.anyPass([R.is(String), R.is(Number)])]);
 const clearNodes = (start, end, tree) => R.range(start, end).forEach(i => { tree[i] = '';});
 
-// get an object specifying serial and parallal tasks and their async task and promise subtypes
-const getTasks = (tree, actions, context) => {
-    const tasks = evalActions(tree, actions, context);
+// get an object specifying serial and parallal tasks
+const getTasks = (tree, actions, context, fulfillPromise) => {
+    const relevantActions = evalActions(tree, actions, context);
+    const tasks = R.map(createTask(tree, fulfillPromise), relevantActions);
     return {
-        series: R.compose(R.map(createTask(tree)), seriesActions)(tasks),
-        parallel: R.compose(R.map(createTask(tree)), parallelActions)(tasks)
+        series: seriesActions(tasks),
+        parallel: parallelActions(tasks),
+        all: tasks
     };
 };
 
 
 // create an async task by taking the "task" spec which specifies a certain action
-const createTask = tree => task => cb => {
+const createTask = (tree, fulfillPromise) => task => cb => {
+    const typeNotifier = new Notifier();
+    typeNotifier.promise.then(type => debug(`${task.name} controller based on its return type looks like a ${type}`));
     const internalCallback = (error, response) => {
         debug(`${task.name} ${task.index} got a response ${response}`);
         task.response = response || '';
@@ -42,24 +47,35 @@ const createTask = tree => task => cb => {
             evalResponse(tree, task);
             debug(`tree is now ${JSON.stringify(tree)}`);
         }
-        return cb(error, task);
+        cb(error, task);
+    };
+    const actionCallback = (err, response) => {
+        typeNotifier.promise.then(type => {
+            if (type == 'async' || err || response) {
+                internalCallback(err, response);
+                debug(`${task.name} called its callback, so is actually async`);
+            }
+        });
+        return fulfillPromise;
     };
     try {
-        const result = task.controller(task.params, internalCallback);
+        const result = task.controller(task.params, actionCallback);
         if (result && typeof result.then == 'function') {
-            debug(`${task.name} controller is a promise`);
+            typeNotifier.complete('promise');
             result
                 .then( response => internalCallback(null, response))
                 .catch( internalCallback );
         } else if (isSync(result)) {
-            debug(`${task.name} controller is sync`);
+            typeNotifier.complete('sync');
             nextTick( () => internalCallback(null, result) );
         } else {
-            debug(`${task.name} controller is async`);
+            typeNotifier.complete('async');
         }
+
     } catch (err) {
         nextTick( () => cb(err) );
     }
+
 };
 
 const makeParams = (index, el, tree, context) => {
@@ -98,6 +114,7 @@ const makeParams = (index, el, tree, context) => {
 
 // get a list of all action tags of a particular type along with their params
 const evalActions = (tree, actions, context, tasks = []) => {
+
     tree.forEach( (el, index) => {
         if (el && R.has(el.tag, actions))
             tasks.push(R.merge(

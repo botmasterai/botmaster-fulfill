@@ -317,6 +317,41 @@ describe('fulfill', function () {
         });
     });
 
+    describe('awaiting/thening next/callback (scheduling functions after fulfill has completed)', function () {
+        it('should perform an async task after fulfill has completed', function (done) {
+            var actions = {
+                hi: {
+                    controller: function controller(params, cb) {
+                        return cb(null, 'hello...').then(function (result) {
+                            result.should.equal('hello... there');
+                            done();
+                        });
+                    }
+                }
+            };
+            fulfill(actions, {}, '<hi /> there', function (err, result) {
+                result.should.equal('hello... there');
+            });
+        });
+
+        it('should work interoperabilly with sync controllers', function (done) {
+            var actions = {
+                hi: {
+                    controller: function controller(params, next) {
+                        next().then(function (result) {
+                            result.should.equal('hello... there');
+                            done();
+                        });
+                        return 'hello...';
+                    }
+                }
+            };
+            fulfill(actions, {}, '<hi /> there', function (err, result) {
+                result.should.equal('hello... there');
+            });
+        });
+    });
+
     describe('multiple return types', function () {
         var actions = void 0;
         var result = 'hello world';

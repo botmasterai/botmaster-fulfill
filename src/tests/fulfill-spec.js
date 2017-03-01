@@ -283,6 +283,76 @@ describe('fulfill', () => {
         });
     });
 
+    describe('awaiting/thening next/callback (scheduling functions after fulfill has completed)', () => {
+        it('should work interoperabilly with callback', done => {
+            const actions = {
+                hi: {
+                    controller: (params, cb) => cb(null, 'hello...').then(result => {
+                        result.should.equal('hello... there');
+                        done();
+                    })
+                }
+            };
+            fulfill(actions, {}, '<hi /> there', (err, result) => {
+                result.should.equal('hello... there');
+            });
+        });
+
+        it('should work interoperabilly with sync controllers', done => {
+            const actions = {
+                hi: {
+                    controller: (params, next) => {
+                        next().then(result => {
+                            result.should.equal('hello... there');
+                            done();
+                        });
+                        return 'hello...';
+                    }
+                }
+            };
+            fulfill(actions, {}, '<hi /> there', (err, result) => {
+                result.should.equal('hello... there');
+            });
+        });
+
+        it('should work interoperabilly with promise controllers', done => {
+            const actions = {
+                hi: {
+                    controller: (params, next) => new Promise((resolve) => {
+                        resolve('hello...');
+                        next().then(result => {
+                            result.should.equal('hello... there');
+                            done();
+                        });
+                    })
+                }
+            };
+            fulfill(actions, {}, '<hi /> there', (err, result) => {
+                result.should.equal('hello... there');
+            });
+        });
+
+        it('should work signal end after recursing', done => {
+            const actions = {
+                intermediate: {
+                    controller: () => '<hi />'
+                },
+                hi: {
+                    controller: (params, next) => new Promise((resolve) => {
+                        resolve('hello...');
+                        next().then(result => {
+                            result.should.equal('hello... there');
+                            done();
+                        });
+                    })
+                }
+            };
+            fulfill(actions, {}, '<intermediate /> there', (err, result) => {
+                result.should.equal('hello... there');
+            });
+        });
+    });
+
     describe('multiple return types', () => {
         let actions;
         const result = 'hello world';

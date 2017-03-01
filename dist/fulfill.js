@@ -1,5 +1,9 @@
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /**
  *  Main module for fulfill, defining the overall fulfill process
  *  @private
@@ -42,24 +46,58 @@ var isPendingActions = function isPendingActions(string, actions) {
     return __isPendingActions(parse(string), actions);
 };
 
+var Notifier = function () {
+    function Notifier() {
+        var _this = this;
+
+        _classCallCheck(this, Notifier);
+
+        this.promise = new Promise(function (resolve, reject) {
+            _this.complete = resolve;
+            _this.error = reject;
+        });
+    }
+
+    _createClass(Notifier, [{
+        key: 'wrapCb',
+        value: function wrapCb(cb) {
+            var _this2 = this;
+
+            return function (err, result) {
+                if (err) _this2.error(err);else _this2.complete(result);
+                cb(err, result);
+            };
+        }
+    }]);
+
+    return Notifier;
+}();
+
 /**
  * Fulfill any actions found in the input text
  * @param  {Object} actions actions to run
  * @param  {Object} context an object of aditional properties to expost though `params`
  * @param  {String} input the string to look for actions in
- * @param  {Array}  [tree] provided as a way to speed up recursion. You probably don't need to use this.
+ * @param  {Array}  [tree] provided as a way to speed up recursion. You probably don't need to use this and providing it without fulfillPromise (or vice versa) will cause an error.
+ * @param  {Array}  [fulfillPromise] Used to let controllers know that fulfill has completed (or hit an error) even though this is a recursed function. You probably don't need to use this.
  * @param  {Function} cb error first callback
  */
-var fulfill = function fulfill(actions, context, input, tree, cb) {
+
+
+var fulfill = function fulfill(actions, context, input, tree, fulfillPromise, cb) {
     if (!cb) {
-        cb = tree;
+        var notifier = new Notifier();
+        cb = notifier.wrapCb(tree);
+        fulfillPromise = notifier.promise;
         tree = parse(input);
     }
     debug('Got tree ' + JSON.stringify(tree));
-    var tasks = getTasks(tree, actions, context);
+    var tasks = getTasks(tree, actions, context, fulfillPromise);
     debug('Got ' + tasks.parallel.length + ' parallel tasks and ' + tasks.series.length + ' serial tasks');
     parallel([apply(parallel, tasks.parallel), apply(series, tasks.series)], function (err, responses) {
-        if (err) cb(err);else {
+        if (err) {
+            cb(err);
+        } else {
             R.forEach(R.curry(evalResponse)(tree, R.__), R.compose(R.filter(R.propSatisfies(function (evaluate) {
                 return evaluate !== 'step';
             }, 'evaluate')), R.flatten)(responses));
@@ -68,10 +106,11 @@ var fulfill = function fulfill(actions, context, input, tree, cb) {
             tree = parse(response);
             if (__isPendingActions(tree, actions)) {
                 debug('recursing response ' + response);
-                fulfill(actions, context, response, tree, cb);
+                fulfill(actions, context, response, tree, fulfillPromise, cb);
             } else {
                 debug('final response ' + response);
                 cb(null, response);
+                //accumulatedTasks.all.forEach(task => task.onFulfillError(err));
             }
         }
     });
@@ -79,5 +118,6 @@ var fulfill = function fulfill(actions, context, input, tree, cb) {
 
 module.exports = {
     fulfill: fulfill,
-    isPendingActions: isPendingActions
+    isPendingActions: isPendingActions,
+    Notifier: Notifier
 };
