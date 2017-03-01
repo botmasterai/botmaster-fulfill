@@ -13,7 +13,7 @@ var _require = require('async'),
 var debug = require('debug')('botmaster:ware:fulfill:actions');
 var render = require('posthtml-render');
 
-var _require2 = require('./actions'),
+var _require2 = require('./utils'),
     Notifier = _require2.Notifier;
 
 // ramda-style utils for procesing action arrays
@@ -67,6 +67,9 @@ var createTask = function createTask(tree, fulfillPromise) {
     return function (task) {
         return function (cb) {
             var typeNotifier = new Notifier();
+            typeNotifier.promise.then(function (type) {
+                return debug(task.name + ' controller based on its return type looks like a ' + type);
+            });
             var internalCallback = function internalCallback(error, response) {
                 debug(task.name + ' ' + task.index + ' got a response ' + response);
                 task.response = response || '';
@@ -78,10 +81,12 @@ var createTask = function createTask(tree, fulfillPromise) {
             };
             var actionCallback = function actionCallback(err, response) {
                 typeNotifier.promise.then(function (type) {
-                    debug(task.name + ' controller is ' + type);
-                    if (type == 'async' || err || response) internalCallback(err, response);
-                    return fulfillPromise;
+                    if (type == 'async' || err || response) {
+                        internalCallback(err, response);
+                        debug(task.name + ' called its callback, so is actually async');
+                    }
                 });
+                return fulfillPromise;
             };
             try {
                 (function () {

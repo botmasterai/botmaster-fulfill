@@ -1,9 +1,5 @@
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /**
  *  Main module for fulfill, defining the overall fulfill process
  *  @private
@@ -24,6 +20,9 @@ var _require2 = require('./actions'),
 var __parse = require('posthtml-parser');
 var render = require('posthtml-render');
 var debug = require('debug')('botmaster:ware:fulfill:parse');
+
+var _require3 = require('./utils'),
+    Notifier = _require3.Notifier;
 
 var parseOptions = {
     xmlMode: true,
@@ -46,33 +45,6 @@ var isPendingActions = function isPendingActions(string, actions) {
     return __isPendingActions(parse(string), actions);
 };
 
-var Notifier = function () {
-    function Notifier() {
-        var _this = this;
-
-        _classCallCheck(this, Notifier);
-
-        this.promise = new Promise(function (resolve, reject) {
-            _this.complete = resolve;
-            _this.error = reject;
-        });
-    }
-
-    _createClass(Notifier, [{
-        key: 'wrapCb',
-        value: function wrapCb(cb) {
-            var _this2 = this;
-
-            return function (err, result) {
-                if (err) _this2.error(err);else _this2.complete(result);
-                cb(err, result);
-            };
-        }
-    }]);
-
-    return Notifier;
-}();
-
 /**
  * Fulfill any actions found in the input text
  * @param  {Object} actions actions to run
@@ -82,8 +54,6 @@ var Notifier = function () {
  * @param  {Array}  [fulfillPromise] Used to let controllers know that fulfill has completed (or hit an error) even though this is a recursed function. You probably don't need to use this.
  * @param  {Function} cb error first callback
  */
-
-
 var fulfill = function fulfill(actions, context, input, tree, fulfillPromise, cb) {
     if (!cb) {
         var notifier = new Notifier();

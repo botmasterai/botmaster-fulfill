@@ -318,7 +318,7 @@ describe('fulfill', function () {
     });
 
     describe('awaiting/thening next/callback (scheduling functions after fulfill has completed)', function () {
-        it('should perform an async task after fulfill has completed', function (done) {
+        it('should work interoperabilly with callback', function (done) {
             var actions = {
                 hi: {
                     controller: function controller(params, cb) {
@@ -347,6 +347,49 @@ describe('fulfill', function () {
                 }
             };
             fulfill(actions, {}, '<hi /> there', function (err, result) {
+                result.should.equal('hello... there');
+            });
+        });
+
+        it('should work interoperabilly with promise controllers', function (done) {
+            var actions = {
+                hi: {
+                    controller: function controller(params, next) {
+                        return new Promise(function (resolve) {
+                            resolve('hello...');
+                            next().then(function (result) {
+                                result.should.equal('hello... there');
+                                done();
+                            });
+                        });
+                    }
+                }
+            };
+            fulfill(actions, {}, '<hi /> there', function (err, result) {
+                result.should.equal('hello... there');
+            });
+        });
+
+        it('should work signal end after recursing', function (done) {
+            var actions = {
+                intermediate: {
+                    controller: function controller() {
+                        return '<hi />';
+                    }
+                },
+                hi: {
+                    controller: function controller(params, next) {
+                        return new Promise(function (resolve) {
+                            resolve('hello...');
+                            next().then(function (result) {
+                                result.should.equal('hello... there');
+                                done();
+                            });
+                        });
+                    }
+                }
+            };
+            fulfill(actions, {}, '<intermediate /> there', function (err, result) {
                 result.should.equal('hello... there');
             });
         });
