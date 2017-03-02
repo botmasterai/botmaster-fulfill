@@ -200,7 +200,7 @@ describe('fulfill', () => {
                 const start = Date.now();
                 const checkParallel = () => {
                     const now = Date.now();
-                    if (Math.abs(now - start - 50) < 30)
+                    if (Math.abs(now - start - 150) < 30)
                         return '-';
                     else
                         return '+';
@@ -208,11 +208,11 @@ describe('fulfill', () => {
                 const actions = {
                     count: {
                         series: true,
-                        controller: (params, cb) => setTimeout(() => cb(null, '' + counter++), 50)
+                        controller: (params, cb) => setTimeout(() => cb(null, '' + counter++), 150)
                     },
                     parallel: {
                         parallel: true,
-                        controller: (params, cb) => setTimeout(() => cb(null, checkParallel()), 50)
+                        controller: (params, cb) => setTimeout(() => cb(null, checkParallel()), 150)
                     }
                 };
                 fulfill(actions, {}, '<count /><parallel /><count /><parallel /><count />', (err, result) => {

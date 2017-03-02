@@ -26,12 +26,10 @@ const clearNodes = (start, end, tree) => R.range(start, end).forEach(i => { tree
 
 // get an object specifying serial and parallal tasks
 const getTasks = (tree, actions, context, fulfillPromise) => {
-    const relevantActions = evalActions(tree, actions, context);
-    const tasks = R.map(createTask(tree, fulfillPromise), relevantActions);
+    const tasks = evalActions(tree, actions, context);
     return {
-        series: seriesActions(tasks),
-        parallel: parallelActions(tasks),
-        all: tasks
+        series: R.compose(R.map(createTask(tree, fulfillPromise)), seriesActions)(tasks),
+        parallel: R.compose(R.map(createTask(tree, fulfillPromise)), parallelActions)(tasks)
     };
 };
 
