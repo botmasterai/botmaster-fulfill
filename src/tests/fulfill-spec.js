@@ -332,7 +332,7 @@ describe('fulfill', () => {
             });
         });
 
-        it('should work signal end after recursing', done => {
+        it('should signal end after recursing', done => {
             const actions = {
                 intermediate: {
                     controller: () => '<hi />'
@@ -349,6 +349,47 @@ describe('fulfill', () => {
             };
             fulfill(actions, {}, '<intermediate /> there', (err, result) => {
                 result.should.equal('hello... there');
+            });
+        });
+
+        it('should signal end after an error', done => {
+            const actions = {
+                error: {
+                    controller: () => { throw new Error('hi'); }
+                },
+                hi: {
+                    controller: (params, next) => new Promise((resolve) => {
+                        resolve('hello...');
+                        next().then((err) => {
+                            err.message.should.equal('hi');
+                            done();
+                        }).catch(done);
+                    })
+                }
+            };
+            fulfill(actions, {}, '<error /> <hi />', () => {} );
+        });
+
+        it('should work if the result is empty', done => {
+            const actions = {
+                hi: {
+                    controller: () => 'hi'
+                },
+                intermediate: {
+                    controller: () => '<ignore />'
+                },
+                ignore: {
+                    controller: (params, next) => new Promise((resolve) => {
+                        resolve('');
+                        next().then(result => {
+                            result.should.equal('hi');
+                            done();
+                        });
+                    })
+                }
+            };
+            fulfill(actions, {}, '<intermediate /><hi />', (err, result) => {
+                result.should.equal('hi');
             });
         });
     });
@@ -411,7 +452,7 @@ describe('fulfill', () => {
         it('it should catch an error with async controller', done => {
             actions.hi.controller = (params, cb) => cb('hi!');
             fulfill(actions, {}, '<hi />', err => {
-                err.should.equal('hi!');
+                err.message.should.equal('hi!');
                 done();
             });
 
@@ -420,7 +461,7 @@ describe('fulfill', () => {
         it('it should catch an error with promise controller', done => {
             actions.hi.controller = () => new Promise((resolve, reject) => reject('hi!'));
             fulfill(actions, {}, '<hi />', err => {
-                err.should.equal('hi!');
+                err.message.should.equal('hi!');
                 done();
             });
         });

@@ -61,7 +61,7 @@ var fulfill = function fulfill(actions, context, input, tree, fulfillPromise, cb
         fulfillPromise = notifier.promise;
         tree = parse(input);
     }
-    debug('Got tree ' + JSON.stringify(tree));
+    debug('Got tree: ' + JSON.stringify(tree));
     var tasks = getTasks(tree, actions, context, fulfillPromise);
     debug('Got ' + tasks.parallel.length + ' parallel tasks and ' + tasks.series.length + ' serial tasks');
     parallel([apply(parallel, tasks.parallel), apply(series, tasks.series)], function (err, responses) {
@@ -71,16 +71,15 @@ var fulfill = function fulfill(actions, context, input, tree, fulfillPromise, cb
             R.forEach(R.curry(evalResponse)(tree, R.__), R.compose(R.filter(R.propSatisfies(function (evaluate) {
                 return evaluate !== 'step';
             }, 'evaluate')), R.flatten)(responses));
-            debug('tree is now ' + JSON.stringify(tree));
+            debug('tree is now: ' + JSON.stringify(tree));
             var response = render(tree);
             tree = parse(response);
             if (__isPendingActions(tree, actions)) {
-                debug('recursing response ' + response);
+                debug('recursing response: "' + response + '"');
                 fulfill(actions, context, response, tree, fulfillPromise, cb);
             } else {
-                debug('final response ' + response);
+                debug('final response: "' + response + '"');
                 cb(null, response);
-                //accumulatedTasks.all.forEach(task => task.onFulfillError(err));
             }
         }
     });

@@ -10,9 +10,9 @@ var Notifier = function () {
 
         _classCallCheck(this, Notifier);
 
-        this.promise = new Promise(function (resolve, reject) {
+        this.promise = new Promise(function (resolve) {
             _this.complete = resolve;
-            _this.error = reject;
+            _this.error = resolve;
         });
     }
 
@@ -22,7 +22,10 @@ var Notifier = function () {
             var _this2 = this;
 
             return function (err, result) {
-                if (err) _this2.error(err);else _this2.complete(result);
+                if (err) {
+                    if (!(err instanceof Error)) err = new Error(err);
+                    _this2.error(err);
+                } else _this2.complete(result);
                 cb(err, result);
             };
         }

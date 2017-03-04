@@ -38,14 +38,20 @@ const getTasks = (tree, actions, context, fulfillPromise) => {
 const createTask = (tree, fulfillPromise) => task => cb => {
     const typeNotifier = new Notifier();
     typeNotifier.promise.then(type => debug(`${task.name} controller based on its return type looks like a ${type}`));
+    let callbackCalled = false;
     const internalCallback = (error, response) => {
-        debug(`${task.name} ${task.index} got a response ${response}`);
-        task.response = response || '';
-        if (task.evaluate == 'step') {
-            evalResponse(tree, task);
-            debug(`tree is now ${JSON.stringify(tree)}`);
+        if (!callbackCalled) {
+            callbackCalled = true;
+            debug(`${task.name} ${task.index} got a response ${response}`);
+            task.response = response || '';
+            if (task.evaluate == 'step') {
+                evalResponse(tree, task);
+                debug(`tree is now ${JSON.stringify(tree)}`);
+            }
+            cb(error, task);
+        } else {
+            debug('refusing to call callback twice.');
         }
-        cb(error, task);
     };
     const actionCallback = (err, response) => {
         typeNotifier.promise.then(type => {
@@ -56,24 +62,31 @@ const createTask = (tree, fulfillPromise) => task => cb => {
         });
         return fulfillPromise;
     };
-    try {
-        const result = task.controller(task.params, actionCallback);
-        if (result && typeof result.then == 'function') {
-            typeNotifier.complete('promise');
-            result
-                .then( response => internalCallback(null, response))
-                .catch( internalCallback );
-        } else if (isSync(result)) {
-            typeNotifier.complete('sync');
-            nextTick( () => internalCallback(null, result) );
-        } else {
-            typeNotifier.complete('async');
-        }
 
+    let result, error;
+    try {
+        result = task.controller(task.params, actionCallback);
     } catch (err) {
+        error = err;
+        debug (`error in ${task.name}: ${err.message}`);
         nextTick( () => cb(err) );
     }
 
+    if (!error) {
+        nextTick(() => {
+            if (result && typeof result.then == 'function' && result !== fulfillPromise) {
+                typeNotifier.complete('promise');
+                result
+                    .then( response => internalCallback(null, response))
+                    .catch( internalCallback );
+            } else if (isSync(result)) {
+                typeNotifier.complete('sync');
+                nextTick( () => internalCallback(null, result) );
+            } else {
+                typeNotifier.complete('async');
+            }
+        });
+    }
 };
 
 const makeParams = (index, el, tree, context) => {

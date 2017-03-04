@@ -53,12 +53,10 @@ var clearNodes = function clearNodes(start, end, tree) {
 
 // get an object specifying serial and parallal tasks
 var getTasks = function getTasks(tree, actions, context, fulfillPromise) {
-    var relevantActions = evalActions(tree, actions, context);
-    var tasks = R.map(createTask(tree, fulfillPromise), relevantActions);
+    var tasks = evalActions(tree, actions, context);
     return {
-        series: seriesActions(tasks),
-        parallel: parallelActions(tasks),
-        all: tasks
+        series: R.compose(R.map(createTask(tree, fulfillPromise)), seriesActions)(tasks),
+        parallel: R.compose(R.map(createTask(tree, fulfillPromise)), parallelActions)(tasks)
     };
 };
 
@@ -70,14 +68,20 @@ var createTask = function createTask(tree, fulfillPromise) {
             typeNotifier.promise.then(function (type) {
                 return debug(task.name + ' controller based on its return type looks like a ' + type);
             });
+            var callbackCalled = false;
             var internalCallback = function internalCallback(error, response) {
-                debug(task.name + ' ' + task.index + ' got a response ' + response);
-                task.response = response || '';
-                if (task.evaluate == 'step') {
-                    evalResponse(tree, task);
-                    debug('tree is now ' + JSON.stringify(tree));
+                if (!callbackCalled) {
+                    callbackCalled = true;
+                    debug(task.name + ' ' + task.index + ' got a response ' + response);
+                    task.response = response || '';
+                    if (task.evaluate == 'step') {
+                        evalResponse(tree, task);
+                        debug('tree is now ' + JSON.stringify(tree));
+                    }
+                    cb(error, task);
+                } else {
+                    debug('refusing to call callback twice.');
                 }
-                cb(error, task);
             };
             var actionCallback = function actionCallback(err, response) {
                 typeNotifier.promise.then(function (type) {
@@ -88,10 +92,22 @@ var createTask = function createTask(tree, fulfillPromise) {
                 });
                 return fulfillPromise;
             };
+
+            var result = void 0,
+                error = void 0;
             try {
-                (function () {
-                    var result = task.controller(task.params, actionCallback);
-                    if (result && typeof result.then == 'function') {
+                result = task.controller(task.params, actionCallback);
+            } catch (err) {
+                error = err;
+                debug('error in ' + task.name + ': ' + err.message);
+                nextTick(function () {
+                    return cb(err);
+                });
+            }
+
+            if (!error) {
+                nextTick(function () {
+                    if (result && typeof result.then == 'function' && result !== fulfillPromise) {
                         typeNotifier.complete('promise');
                         result.then(function (response) {
                             return internalCallback(null, response);
@@ -104,10 +120,6 @@ var createTask = function createTask(tree, fulfillPromise) {
                     } else {
                         typeNotifier.complete('async');
                     }
-                })();
-            } catch (err) {
-                nextTick(function () {
-                    return cb(err);
                 });
             }
         };

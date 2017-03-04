@@ -10,16 +10,24 @@ const debug = require('debug')('botmaster:ware:fulfill');
 // Utility functions for working with botmaster
 const textLens = R.lensPath(['message', 'message', 'text']);
 const defaultInput= R.view(textLens);
-const defaultResponse = ({message, response}) => {
-    message.message.text = response ? response.trim(' ') : '';
-    return R.isEmpty(message.message.text) == false;
+const defaultResponse = ({message, response, next}) => {
+    if (! response || typeof response !== 'string')
+        return debug('no response, not calling next');
+
+    const trimmedResponse = response.trim(' ');
+    if (R.isEmpty(trimmedResponse))
+        return debug('no final message after trimming, not calling next');
+
+    message.message.text = trimmedResponse;
+    next();
+    debug(`fulfill sent new message: ${JSON.stringify(message)}`);
 };
 
 /**
  * Generate outgoing middleware for fulfill
  * @param  {Object} options.actions the actions to use
  * @param  {Function} [options.inputTransformer] a function that receives {bot, message, update} and returns the fulfill input
- * @param  {Function} [options.reponseTransformer] a function that receives {bot, message, update, response} updates the message
+ * @param  {Function} [options.reponseTransformer] a function that receives {bot, message, update, response, next} updates the message and calls next.
  * @param {Object} [options.params] an object of additional names to provide in params.
  * @return {function}         outgoing middleware
  */
@@ -41,13 +49,10 @@ const FulfillWare = options => (bot, update, message, next) => {
         params,
         inputTransformer({bot, update, message}),
         (error, response) => {
-            const nonEmpty = reponseTransformer({bot, message, update, response});
-            if (nonEmpty) {
-                debug(`fulfill sent new message: ${JSON.stringify(message)}`);
-            } else {
-                debug('no final message to send');
-            }
-            next(error);
+            if (!error)
+                reponseTransformer({bot, message, update, response, next});
+            else
+                next(error);
         }
     );
 };

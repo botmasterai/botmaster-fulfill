@@ -17,17 +17,24 @@ var textLens = R.lensPath(['message', 'message', 'text']);
 var defaultInput = R.view(textLens);
 var defaultResponse = function defaultResponse(_ref) {
     var message = _ref.message,
-        response = _ref.response;
+        response = _ref.response,
+        next = _ref.next;
 
-    message.message.text = response ? response.trim(' ') : '';
-    return R.isEmpty(message.message.text) == false;
+    if (!response || typeof response !== 'string') return debug('no response, not calling next');
+
+    var trimmedResponse = response.trim(' ');
+    if (R.isEmpty(trimmedResponse)) return debug('no final message after trimming, not calling next');
+
+    message.message.text = trimmedResponse;
+    next();
+    debug('fulfill sent new message: ' + JSON.stringify(message));
 };
 
 /**
  * Generate outgoing middleware for fulfill
  * @param  {Object} options.actions the actions to use
  * @param  {Function} [options.inputTransformer] a function that receives {bot, message, update} and returns the fulfill input
- * @param  {Function} [options.reponseTransformer] a function that receives {bot, message, update, response} updates the message
+ * @param  {Function} [options.reponseTransformer] a function that receives {bot, message, update, response, next} updates the message and calls next.
  * @param {Object} [options.params] an object of additional names to provide in params.
  * @return {function}         outgoing middleware
  */
@@ -49,13 +56,7 @@ var FulfillWare = function FulfillWare(options) {
         params.update = update;
         params.message = message;
         fulfill(options.actions, params, inputTransformer({ bot: bot, update: update, message: message }), function (error, response) {
-            var nonEmpty = reponseTransformer({ bot: bot, message: message, update: update, response: response });
-            if (nonEmpty) {
-                debug('fulfill sent new message: ' + JSON.stringify(message));
-            } else {
-                debug('no final message to send');
-            }
-            next(error);
+            if (!error) reponseTransformer({ bot: bot, message: message, update: update, response: response, next: next });else next(error);
         });
     };
 };

@@ -219,7 +219,7 @@ describe('fulfill', function () {
                 var start = Date.now();
                 var checkParallel = function checkParallel() {
                     var now = Date.now();
-                    if (Math.abs(now - start - 50) < 30) return '-';else return '+';
+                    if (Math.abs(now - start - 150) < 30) return '-';else return '+';
                 };
                 var actions = {
                     count: {
@@ -227,7 +227,7 @@ describe('fulfill', function () {
                         controller: function controller(params, cb) {
                             return setTimeout(function () {
                                 return cb(null, '' + counter++);
-                            }, 50);
+                            }, 150);
                         }
                     },
                     parallel: {
@@ -235,7 +235,7 @@ describe('fulfill', function () {
                         controller: function controller(params, cb) {
                             return setTimeout(function () {
                                 return cb(null, checkParallel());
-                            }, 50);
+                            }, 150);
                         }
                     }
                 };
@@ -370,7 +370,7 @@ describe('fulfill', function () {
             });
         });
 
-        it('should work signal end after recursing', function (done) {
+        it('should signal end after recursing', function (done) {
             var actions = {
                 intermediate: {
                     controller: function controller() {
@@ -391,6 +391,57 @@ describe('fulfill', function () {
             };
             fulfill(actions, {}, '<intermediate /> there', function (err, result) {
                 result.should.equal('hello... there');
+            });
+        });
+
+        it('should signal end after an error', function (done) {
+            var actions = {
+                error: {
+                    controller: function controller() {
+                        throw new Error('hi');
+                    }
+                },
+                hi: {
+                    controller: function controller(params, next) {
+                        return new Promise(function (resolve) {
+                            resolve('hello...');
+                            next().then(function (err) {
+                                err.message.should.equal('hi');
+                                done();
+                            }).catch(done);
+                        });
+                    }
+                }
+            };
+            fulfill(actions, {}, '<error /> <hi />', function () {});
+        });
+
+        it('should work if the result is empty', function (done) {
+            var actions = {
+                hi: {
+                    controller: function controller() {
+                        return 'hi';
+                    }
+                },
+                intermediate: {
+                    controller: function controller() {
+                        return '<ignore />';
+                    }
+                },
+                ignore: {
+                    controller: function controller(params, next) {
+                        return new Promise(function (resolve) {
+                            resolve('');
+                            next().then(function (result) {
+                                result.should.equal('hi');
+                                done();
+                            });
+                        });
+                    }
+                }
+            };
+            fulfill(actions, {}, '<intermediate /><hi />', function (err, result) {
+                result.should.equal('hi');
             });
         });
     });
@@ -463,7 +514,7 @@ describe('fulfill', function () {
                 return cb('hi!');
             };
             fulfill(actions, {}, '<hi />', function (err) {
-                err.should.equal('hi!');
+                err.message.should.equal('hi!');
                 done();
             });
         });
@@ -475,7 +526,7 @@ describe('fulfill', function () {
                 });
             };
             fulfill(actions, {}, '<hi />', function (err) {
-                err.should.equal('hi!');
+                err.message.should.equal('hi!');
                 done();
             });
         });
