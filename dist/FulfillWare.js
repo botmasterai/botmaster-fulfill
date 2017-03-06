@@ -14,16 +14,30 @@ var debug = require('debug')('botmaster:ware:fulfill');
 
 // Utility functions for working with botmaster
 var textLens = R.lensPath(['message', 'message', 'text']);
+
+/**
+ * Default function to extraxt input for fulfill from botmaster context. Uses simply message.message.text. If it does not exist then fulfill does not run.
+ * @param  {Object} $0 context object consisting of botmaster objects and next
+ * @param {Object} $0.message the botmaster message
+ */
 var defaultInput = R.view(textLens);
+
+/**
+ * Default function to update botmaster middleware context with fulfill response and call next. It only sets message.message.text if the response is a non empty string after trimming. Otherwise it calles next with an error.
+ * @param  {Object}   $0 context object consisting of botmaster objects, fulfill response, and next
+ * @param  {Object}   $0.message botmaster message
+ * @param  {Function} $0.next next function from botmaster outgoing middleware
+ * @param  {String}   $0.response respopnse from fulfill
+ */
 var defaultResponse = function defaultResponse(_ref) {
     var message = _ref.message,
         response = _ref.response,
         next = _ref.next;
 
-    if (!response || typeof response !== 'string') return debug('no response, not calling next');
+    if (!response || typeof response !== 'string') return next(new Error('No response after fulfill or response is not a string'));
 
     var trimmedResponse = response.trim(' ');
-    if (R.isEmpty(trimmedResponse)) return debug('no final message after trimming, not calling next');
+    if (R.isEmpty(trimmedResponse)) return next(new Error('Response is empty after trimming'));
 
     message.message.text = trimmedResponse;
     next();
@@ -33,10 +47,10 @@ var defaultResponse = function defaultResponse(_ref) {
 /**
  * Generate outgoing middleware for fulfill
  * @param  {Object} options.actions the actions to use
- * @param  {Function} [options.inputTransformer] a function that receives {bot, message, update} and returns the fulfill input
- * @param  {Function} [options.reponseTransformer] a function that receives {bot, message, update, response, next} updates the message and calls next.
+ * @param  {Function} [options.inputTransformer] a function that receives {bot, message, update} and returns the fulfill input or a falsy value to skip running fulfill.
+ * @param  {Function} [options.reponseTransformer] a function that receives ({bot, message, update, response, next}) updates the message and calls next.
  * @param {Object} [options.params] an object of additional names to provide in params.
- * @return {function}         outgoing middleware
+ * @return {function}   outgoing middleware
  */
 var FulfillWare = function FulfillWare(options) {
     return function (bot, update, message, next) {
@@ -52,12 +66,17 @@ var FulfillWare = function FulfillWare(options) {
 
         debug('fulfill using actions: ' + JSON.stringify(actions));
         debug('fulfill using as input: ' + inputTransformer({ bot: bot, message: message }));
-        params.bot = bot;
-        params.update = update;
-        params.message = message;
-        fulfill(options.actions, params, inputTransformer({ bot: bot, update: update, message: message }), function (error, response) {
-            if (!error) reponseTransformer({ bot: bot, message: message, update: update, response: response, next: next });else next(error);
-        });
+        var input = inputTransformer({ bot: bot, update: update, message: message });
+        if (input) {
+            params.bot = bot;
+            params.update = update;
+            params.message = message;
+            fulfill(options.actions, params, input, function (error, response) {
+                if (!error) reponseTransformer({ bot: bot, message: message, update: update, response: response, next: next });else next(error);
+            });
+        } else {
+            next();
+        }
     };
 };
 

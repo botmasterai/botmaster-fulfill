@@ -64,12 +64,29 @@ describe('fulfill outgoing ware', () => {
         );
     });
 
+    it('should not conflict with outgoing messages not containing message.text (like attachments)', done => {
+        const actions = {};
+        const ware = FulfillWare({
+            actions
+        });
+        const message = {
+            attachment: {
+            }
+        };
+        ware(
+            bot, {},
+            message,
+            (err) => {
+                done(err);
+            }
+        );
+    });
+
     it('should not send empty messages', done => {
         const actions = {
             empty: {
                 controller: (params, next) => {
-                    next(null, '')
-                        .then(done);
+                    next(null, '');
                 }
 
             }
@@ -85,11 +102,41 @@ describe('fulfill outgoing ware', () => {
         ware(
             bot, {},
             message,
-            () => {
-                done('this should not be called');
+            (err) => {
+                err.message.should.eql('No response after fulfill or response is not a string');
+                done();
             }
         );
     });
+
+
+    it('should not send messages consisting of spaces only', done => {
+        const actions = {
+            empty: {
+                controller: (params, next) => {
+                    next(null, '  ');
+                }
+
+            }
+        };
+        const ware = FulfillWare({
+            actions
+        });
+        const message = {
+            message: {
+                text: '<empty />'
+            }
+        };
+        ware(
+            bot, {},
+            message,
+            (err) => {
+                err.message.should.eql('Response is empty after trimming');
+                done();
+            }
+        );
+    });
+
 
     it('should work with the next syntax', done => {
         const actions = {

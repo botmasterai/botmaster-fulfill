@@ -479,14 +479,14 @@ describe('fulfill', () => {
             actions.hi.controller = (params, cb) => cb('hi!');
             fulfill(actions, {}, '', (err, result) => {
                 result.should.equal('');
-                done();
+                done(err);
             });
         });
 
         it('it should handle empty action spec', done => {
             fulfill({}, {}, '<hi/>', (err, result) => {
                 result.should.equal('<hi></hi>');
-                done();
+                done(err);
             });
         });
 
@@ -494,7 +494,7 @@ describe('fulfill', () => {
             actions.hi.controller = () => '';
             fulfill(actions, {}, 'hi <hi/>', (err, result) => {
                 result.should.equal('hi ');
-                done();
+                done(err);
             });
         });
     });

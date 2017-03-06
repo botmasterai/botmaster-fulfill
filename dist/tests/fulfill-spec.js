@@ -546,14 +546,14 @@ describe('fulfill', function () {
             };
             fulfill(actions, {}, '', function (err, result) {
                 result.should.equal('');
-                done();
+                done(err);
             });
         });
 
         it('it should handle empty action spec', function (done) {
             fulfill({}, {}, '<hi/>', function (err, result) {
                 result.should.equal('<hi></hi>');
-                done();
+                done(err);
             });
         });
 
@@ -563,7 +563,7 @@ describe('fulfill', function () {
             };
             fulfill(actions, {}, 'hi <hi/>', function (err, result) {
                 result.should.equal('hi ');
-                done();
+                done(err);
             });
         });
     });

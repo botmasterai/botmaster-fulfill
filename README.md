@@ -17,11 +17,10 @@ Find the full documentation at the main botmaster website: <http://botmasterai.c
 
 Also check out our pre-made actions:
 
-| Actions        | Repository                                                                            |
-|----------------|---------------------------------------------------------------------------------------|
-|pause, greet    | [botmaster-fulfill-actions](https://github.com/botmasterai/botmaster-fulfill-actions) |
-|button, buttons | [botmaster-button](https://github.com/botmasterai/botmaster-button)                   |
-
+| Actions         | Repository                                                                            |
+| --------------- | ------------------------------------------------------------------------------------- |
+| pause, greet    | [botmaster-fulfill-actions](https://github.com/botmasterai/botmaster-fulfill-actions) |
+| button, buttons | [botmaster-button](https://github.com/botmasterai/botmaster-button)                   |
 
 ## Quick start
 
@@ -42,7 +41,6 @@ botmaster.use('outgoing', outgoing({actions}));
 botmaster.once('update', bot => bot.sendMessage('<hi />'));
 botmaster.once('update', bot => bot.sendMessage('<bye />'));
 ```
-
 
 ## API Reference
 
@@ -68,8 +66,29 @@ Fulfill any actions found in the input text
 -   `actions` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** actions to run
 -   `context` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** an object of aditional properties to expost though `params`
 -   `input` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** the string to look for actions in
--   `tree` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)?** provided as a way to speed up recursion. You probably don't need to use this.
+-   `tree` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)?** provided as a way to speed up recursion. You probably don't need to use this and providing it without fulfillPromise (or vice versa) will cause an error.
+-   `fulfillPromise` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)?** Used to let controllers know that fulfill has completed (or hit an error) even though this is a recursed function. You probably don't need to use this.
 -   `cb` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** error first callback
+
+### defaultInput
+
+Default function to extraxt input for fulfill from botmaster context. Uses simply message.message.text. If it does not exist then fulfill does not run.
+
+**Parameters**
+
+-   `$0` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object consisting of botmaster objects and next
+    -   `$0.message` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** the botmaster message
+
+### defaultResponse
+
+Default function to update botmaster middleware context with fulfill response and call next. It only sets message.message.text if the response is a non empty string after trimming. Otherwise it calles next with an error.
+
+**Parameters**
+
+-   `$0` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object consisting of botmaster objects, fulfill response, and next
+    -   `$0.message` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** botmaster message
+    -   `$0.next` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** next function from botmaster outgoing middleware
+    -   `$0.response` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** respopnse from fulfill
 
 ### FulfillWare
 
@@ -79,7 +98,8 @@ Generate outgoing middleware for fulfill
 
 -   `options`  
     -   `options.actions` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** the actions to use
-    -   `options.updateToContext` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** optional, a function that receives the botmaster {bot, update} and turns into the fulfill context
-    -   `options.updateToResponse` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** optional, a function that receives the botmaster (bot, update} and turns into the fulfill response
+    -   `options.inputTransformer` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** a function that receives {bot, message, update} and returns the fulfill input or a falsy value to skip running fulfill.
+    -   `options.reponseTransformer` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** a function that receives ({bot, message, update, response, next}) updates the message and calls next.
+    -   `options.params` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)?** an object of additional names to provide in params.
 
 Returns **[function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** outgoing middleware
