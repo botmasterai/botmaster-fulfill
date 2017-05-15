@@ -23,7 +23,7 @@ var textLens = R.lensPath(['message', 'message', 'text']);
 var defaultInput = R.view(textLens);
 
 /**
- * Default function to update botmaster middleware context with fulfill response and call next. It only sets message.message.text if the response is a non empty string after trimming. Otherwise it calles next with an error.
+ * Default function to update botmaster middleware context with fulfill response and call next. It only sets message.message.text if the response is a non empty string after trimming. Otherwise it calls next with "cancels" which cancels  the outgoing message.
  * @param  {Object}   $0 context object consisting of botmaster objects, fulfill response, and next
  * @param  {Object}   $0.message botmaster message
  * @param  {Function} $0.next next function from botmaster outgoing middleware
@@ -34,10 +34,10 @@ var defaultResponse = function defaultResponse(_ref) {
         response = _ref.response,
         next = _ref.next;
 
-    if (!response || typeof response !== 'string') return next(new Error('No response after fulfill or response is not a string'));
+    if (!response || typeof response !== 'string') return next('cancel');
 
     var trimmedResponse = response.trim(' ');
-    if (R.isEmpty(trimmedResponse)) return next(new Error('Response is empty after trimming'));
+    if (R.isEmpty(trimmedResponse)) return next('cancel');
 
     message.message.text = trimmedResponse;
     next();
@@ -46,6 +46,7 @@ var defaultResponse = function defaultResponse(_ref) {
 
 /**
  * Generate outgoing middleware for fulfill
+ * @param  {Object} options options
  * @param  {Object} options.actions the actions to use
  * @param  {Function} [options.inputTransformer] a function that receives {bot, message, update} and returns the fulfill input or a falsy value to skip running fulfill.
  * @param  {Function} [options.reponseTransformer] a function that receives ({bot, message, update, response, next}) updates the message and calls next.
@@ -53,29 +54,33 @@ var defaultResponse = function defaultResponse(_ref) {
  * @return {function}   outgoing middleware
  */
 var FulfillWare = function FulfillWare(options) {
-    return function (bot, update, message, next) {
-        debug('fulfill received message: ' + JSON.stringify(message));
-        var _options$actions = options.actions,
-            actions = _options$actions === undefined ? {} : _options$actions,
-            _options$inputTransfo = options.inputTransformer,
-            inputTransformer = _options$inputTransfo === undefined ? defaultInput : _options$inputTransfo,
-            _options$reponseTrans = options.reponseTransformer,
-            reponseTransformer = _options$reponseTrans === undefined ? defaultResponse : _options$reponseTrans,
-            _options$params = options.params,
-            params = _options$params === undefined ? {} : _options$params;
+    return {
+        type: 'outgoing',
+        name: 'fulfillWare',
+        controller: function controller(bot, update, message, next) {
+            debug('fulfill received message: ' + JSON.stringify(message));
+            var _options$actions = options.actions,
+                actions = _options$actions === undefined ? {} : _options$actions,
+                _options$inputTransfo = options.inputTransformer,
+                inputTransformer = _options$inputTransfo === undefined ? defaultInput : _options$inputTransfo,
+                _options$reponseTrans = options.reponseTransformer,
+                reponseTransformer = _options$reponseTrans === undefined ? defaultResponse : _options$reponseTrans,
+                _options$params = options.params,
+                params = _options$params === undefined ? {} : _options$params;
 
-        debug('fulfill using actions: ' + JSON.stringify(actions));
-        debug('fulfill using as input: ' + inputTransformer({ bot: bot, message: message }));
-        var input = inputTransformer({ bot: bot, update: update, message: message });
-        if (input) {
-            params.bot = bot;
-            params.update = update;
-            params.message = message;
-            fulfill(options.actions, params, input, function (error, response) {
-                if (!error) reponseTransformer({ bot: bot, message: message, update: update, response: response, next: next });else next(error);
-            });
-        } else {
-            next();
+            debug('fulfill using actions: ' + JSON.stringify(actions));
+            debug('fulfill using as input: ' + inputTransformer({ bot: bot, message: message }));
+            var input = inputTransformer({ bot: bot, update: update, message: message });
+            if (input) {
+                params.bot = bot;
+                params.update = update;
+                params.message = message;
+                fulfill(options.actions, params, input, function (error, response) {
+                    if (!error) reponseTransformer({ bot: bot, message: message, update: update, response: response, next: next });else next(error);
+                });
+            } else {
+                next();
+            }
         }
     };
 };

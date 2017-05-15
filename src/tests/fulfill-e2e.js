@@ -3,11 +3,10 @@ const {
     botmaster,
     telegramMock,
     respond,
-    incomingUpdate,
     outgoingMessage
 } = require('botmaster-test');
 
-describe('botmaster-fulfill', () => {
+describe('botmaster fulfill end to end', () => {
     let myBotmaster;
     let myTelegramMock;
 
@@ -17,7 +16,7 @@ describe('botmaster-fulfill', () => {
     }));
 
     it('it should say hello world!', done => {
-        myBotmaster.use('outgoing', FulfillWare({
+        myBotmaster.use(FulfillWare({
             actions: {
                 hi: {
                     controller: () => 'hello world!!'
@@ -36,7 +35,7 @@ describe('botmaster-fulfill', () => {
 
     describe('emitting messages', () => {
         it('it should handle ignoring tags', done => {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     ignore: {
                         controller: () => ''
@@ -53,7 +52,7 @@ describe('botmaster-fulfill', () => {
         });
 
         it('it should send two messages', done => {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     send: {
                         controller: params => params.bot
@@ -62,7 +61,7 @@ describe('botmaster-fulfill', () => {
                 }
             }));
             respond(myBotmaster)('<send>hello...</send><send>there!</send>');
-            myBotmaster.on('error', (bot, error) => done(new Error(`botmaster error: ${error}`)));
+            myBotmaster.on('error', (bot, error) => console.log(error) || done(new Error(`botmaster error: ${error}`)));
             myTelegramMock
                 .expect(['hello...', 'there!'], done)
                 .sendUpdate('hi bob', err => {
@@ -76,7 +75,7 @@ describe('botmaster-fulfill', () => {
 
     describe('middleware specific params', () => {
         it('it should have the update that was sent', done => {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     send: {
                         controller: ({update}) => {
@@ -97,7 +96,7 @@ describe('botmaster-fulfill', () => {
                 });
         });
         it('it should have the message that was sent', done => {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     send: {
                         controller: ({message})=> {

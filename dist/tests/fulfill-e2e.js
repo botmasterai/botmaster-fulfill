@@ -7,10 +7,9 @@ var _require2 = require('botmaster-test'),
     botmaster = _require2.botmaster,
     telegramMock = _require2.telegramMock,
     respond = _require2.respond,
-    incomingUpdate = _require2.incomingUpdate,
     outgoingMessage = _require2.outgoingMessage;
 
-describe('botmaster-fulfill', function () {
+describe('botmaster fulfill end to end', function () {
     var myBotmaster = void 0;
     var myTelegramMock = void 0;
 
@@ -22,7 +21,7 @@ describe('botmaster-fulfill', function () {
     });
 
     it('it should say hello world!', function (done) {
-        myBotmaster.use('outgoing', FulfillWare({
+        myBotmaster.use(FulfillWare({
             actions: {
                 hi: {
                     controller: function controller() {
@@ -42,7 +41,7 @@ describe('botmaster-fulfill', function () {
 
     describe('emitting messages', function () {
         it('it should handle ignoring tags', function (done) {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     ignore: {
                         controller: function controller() {
@@ -61,7 +60,7 @@ describe('botmaster-fulfill', function () {
         });
 
         it('it should send two messages', function (done) {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     send: {
                         controller: function controller(params) {
@@ -72,7 +71,7 @@ describe('botmaster-fulfill', function () {
             }));
             respond(myBotmaster)('<send>hello...</send><send>there!</send>');
             myBotmaster.on('error', function (bot, error) {
-                return done(new Error('botmaster error: ' + error));
+                return console.log(error) || done(new Error('botmaster error: ' + error));
             });
             myTelegramMock.expect(['hello...', 'there!'], done).sendUpdate('hi bob', function (err) {
                 if (err) done(new Error('supertest error: ' + err));
@@ -82,7 +81,7 @@ describe('botmaster-fulfill', function () {
 
     describe('middleware specific params', function () {
         it('it should have the update that was sent', function (done) {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     send: {
                         controller: function controller(_ref) {
@@ -102,7 +101,7 @@ describe('botmaster-fulfill', function () {
             });
         });
         it('it should have the message that was sent', function (done) {
-            myBotmaster.use('outgoing', FulfillWare({
+            myBotmaster.use(FulfillWare({
                 actions: {
                     send: {
                         controller: function controller(_ref2) {

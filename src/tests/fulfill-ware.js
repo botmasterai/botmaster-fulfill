@@ -22,7 +22,7 @@ describe('fulfill outgoing ware', () => {
                 text: '<hi />'
             }
         };
-        ware(
+        ware.controller(
             bot, {},
             message,
             (err) => {
@@ -54,7 +54,7 @@ describe('fulfill outgoing ware', () => {
                 text: '<hi />'
             }
         };
-        ware(
+        ware.controller(
             bot, {},
             message,
             (err) => {
@@ -73,7 +73,7 @@ describe('fulfill outgoing ware', () => {
             attachment: {
             }
         };
-        ware(
+        ware.controller(
             bot, {},
             message,
             (err) => {
@@ -99,11 +99,11 @@ describe('fulfill outgoing ware', () => {
                 text: '<empty />'
             }
         };
-        ware(
+        ware.controller(
             bot, {},
             message,
             (err) => {
-                err.message.should.eql('No response after fulfill or response is not a string');
+                err.should.eql('cancel');
                 done();
             }
         );
@@ -127,11 +127,11 @@ describe('fulfill outgoing ware', () => {
                 text: '<empty />'
             }
         };
-        ware(
+        ware.controller(
             bot, {},
             message,
             (err) => {
-                err.message.should.eql('Response is empty after trimming');
+                err.should.eql('cancel');
                 done();
             }
         );
@@ -153,7 +153,7 @@ describe('fulfill outgoing ware', () => {
                 text: '<HI />'
             }
         };
-        ware(
+        ware.controller(
             bot, {},
             message,
             () => {

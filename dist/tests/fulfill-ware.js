@@ -27,7 +27,7 @@ describe('fulfill outgoing ware', function () {
                 text: '<hi />'
             }
         };
-        ware(bot, {}, message, function (err) {
+        ware.controller(bot, {}, message, function (err) {
             if (err) return done(err);
             message.message.text.should.equal('hi world');
             done();
@@ -53,7 +53,7 @@ describe('fulfill outgoing ware', function () {
                 text: '<hi />'
             }
         };
-        ware(bot, {}, message, function (err) {
+        ware.controller(bot, {}, message, function (err) {
             if (err) return done(err);
             done();
         });
@@ -67,7 +67,7 @@ describe('fulfill outgoing ware', function () {
         var message = {
             attachment: {}
         };
-        ware(bot, {}, message, function (err) {
+        ware.controller(bot, {}, message, function (err) {
             done(err);
         });
     });
@@ -89,8 +89,8 @@ describe('fulfill outgoing ware', function () {
                 text: '<empty />'
             }
         };
-        ware(bot, {}, message, function (err) {
-            err.message.should.eql('No response after fulfill or response is not a string');
+        ware.controller(bot, {}, message, function (err) {
+            err.should.eql('cancel');
             done();
         });
     });
@@ -112,8 +112,8 @@ describe('fulfill outgoing ware', function () {
                 text: '<empty />'
             }
         };
-        ware(bot, {}, message, function (err) {
-            err.message.should.eql('Response is empty after trimming');
+        ware.controller(bot, {}, message, function (err) {
+            err.should.eql('cancel');
             done();
         });
     });
@@ -134,7 +134,7 @@ describe('fulfill outgoing ware', function () {
                 text: '<HI />'
             }
         };
-        ware(bot, {}, message, function () {
+        ware.controller(bot, {}, message, function () {
             done();
         });
     });

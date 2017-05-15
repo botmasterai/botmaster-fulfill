@@ -5,6 +5,8 @@
 
 Battle-tested middleware for botmaster <https://botmasterai.github.io/>).
 
+Now updated to work with Botmaster >= v3.0! For botmaster 2.x please use `botmaster-fulfill@3.2.0`
+
 Enable chatbots to perform actions on Node.js.
 
 Developers write "action specs" that specify how an XML tag should be replaced in a chatbot response, such as confirming that the action was performed simply returning an empty string so that the tag is removed.
@@ -25,10 +27,18 @@ Also check out our pre-made actions:
 ## Quick start
 
 ```js
+// 1. Import botmaster and setup your bots, for example telegram
 const Botmaster = require('botmaster');
+const Telegram = require('botmaster-telegram');
+const telegramSettings = require('./my-telegram-bots-settings');
+const botmaster = new Botmaster();
+const telegramBot = new TelegramBot(telegramSettings);
+botmaster.addBot(TelegramBot);
+
+// 2. set up any incoming middleware that you might need
+
+// 3. at the end set up fulfill outgoing ware...
 const {fulfillOutgoingWare} = require('botmaster-fulfill');
-const botsSettings = require('./my-bots-settings');
-const botmaster = new Botmaster({botsSettings});
 const actions = {
         hi: {
             controller: () => 'hi there!'
@@ -37,9 +47,11 @@ const actions = {
             controller: () => 'bye please come again'
         }
 }
-botmaster.use('outgoing', outgoing({actions}));
-botmaster.once('update', bot => bot.sendMessage('<hi />'));
-botmaster.once('update', bot => bot.sendMessage('<bye />'));
+botmaster.use(fulfillOutgoingWare({actions}));
+
+// Profit. Any messages that telegram bot sends will be processed by fulfill
+telegramBot.sendTextMessageTo('<hi />', 1234);
+telegramBot.sendTextMessageTo('<bye />', 1234);
 ```
 
 ## API Reference
@@ -76,19 +88,19 @@ Default function to extraxt input for fulfill from botmaster context. Uses simpl
 
 **Parameters**
 
--   `$0` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object consisting of botmaster objects and next
+-   `$0` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** context object consisting of botmaster objects and next
     -   `$0.message` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** the botmaster message
 
 ### defaultResponse
 
-Default function to update botmaster middleware context with fulfill response and call next. It only sets message.message.text if the response is a non empty string after trimming. Otherwise it calles next with an error.
+Default function to update botmaster middleware context with fulfill response and call next. It only sets message.message.text if the response is a non empty string after trimming. Otherwise it calls next with "cancels" which cancels  the outgoing message.
 
 **Parameters**
 
--   `$0` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object consisting of botmaster objects, fulfill response, and next
+-   `$0` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** context object consisting of botmaster objects, fulfill response, and next
     -   `$0.message` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** botmaster message
-    -   `$0.next` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** next function from botmaster outgoing middleware
     -   `$0.response` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** respopnse from fulfill
+    -   `$0.next` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** next function from botmaster outgoing middleware
 
 ### FulfillWare
 
@@ -96,7 +108,7 @@ Generate outgoing middleware for fulfill
 
 **Parameters**
 
--   `options`  
+-   `options` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** options
     -   `options.actions` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** the actions to use
     -   `options.inputTransformer` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** a function that receives {bot, message, update} and returns the fulfill input or a falsy value to skip running fulfill.
     -   `options.reponseTransformer` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** a function that receives ({bot, message, update, response, next}) updates the message and calls next.
