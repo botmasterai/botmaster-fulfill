@@ -34,7 +34,7 @@ describe('botmaster fulfill end to end', () => {
     });
 
     describe('emitting messages', () => {
-        it('it should handle ignoring tags', done => {
+        it('it should handle ignore type actions', done => {
             myBotmaster.use(FulfillWare({
                 actions: {
                     ignore: {
@@ -46,6 +46,23 @@ describe('botmaster fulfill end to end', () => {
             myBotmaster.on('error', (bot, error) => done(new Error(`botmaster error: ${error}`)));
             myTelegramMock
                 .expect(['hi'], done)
+                .sendUpdate('hi bob', err => {
+                    if (err) done(new Error('supertest error: ' + err));
+                });
+        });
+
+        it('it should handle ignoring tags', done => {
+            myBotmaster.use(FulfillWare({
+                actions: {
+                    ignore: {
+                        controller: () => ''
+                    }
+                }
+            }));
+            respond(myBotmaster)('<notYourTag /><somethingInXml>{\"url\": \"https:/example.com\"}</somethingInXml>hi<ignore />');
+            myBotmaster.on('error', (bot, error) => done(new Error(`botmaster error: ${error}`)));
+            myTelegramMock
+                .expect([`<notYourTag></notYourTag><somethingInXml>{\\\\\\"url\\\\\\": \\\\\\"https:/example.com\\\\\\"}</somethingInXml>hi\\\\\\"}`], done)
                 .sendUpdate('hi bob', err => {
                     if (err) done(new Error('supertest error: ' + err));
                 });

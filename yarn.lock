@@ -960,7 +960,7 @@ boom@2.x.x:
   dependencies:
     hoek "2.x.x"
 
-botmaster-telegram@>=1.0.0:
+botmaster-telegram@>=1.0.0, botmaster-telegram@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/botmaster-telegram/-/botmaster-telegram-1.0.0.tgz#57396334e82754a389e6aa3d994eee43ee73da1c"
   dependencies:

@@ -497,5 +497,13 @@ describe('fulfill', () => {
                 done(err);
             });
         });
+
+        it('it should leave other xml alone', done => {
+            actions.hi.controller = () => '';
+            fulfill(actions, {}, '<notYourTag></notYourTag><somethingInXml>{\"url\": \"https:/example.com\"}</somethingInXml>', (err, result) => {
+                result.should.equal('<notYourTag></notYourTag><somethingInXml>{"url": "https:/example.com"}</somethingInXml>');
+                done(err);
+            });
+        });
     });
 });

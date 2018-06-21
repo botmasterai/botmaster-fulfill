@@ -40,7 +40,7 @@ describe('botmaster fulfill end to end', function () {
     });
 
     describe('emitting messages', function () {
-        it('it should handle ignoring tags', function (done) {
+        it('it should handle ignore type actions', function (done) {
             myBotmaster.use(FulfillWare({
                 actions: {
                     ignore: {
@@ -55,6 +55,25 @@ describe('botmaster fulfill end to end', function () {
                 return done(new Error('botmaster error: ' + error));
             });
             myTelegramMock.expect(['hi'], done).sendUpdate('hi bob', function (err) {
+                if (err) done(new Error('supertest error: ' + err));
+            });
+        });
+
+        it('it should handle ignoring tags', function (done) {
+            myBotmaster.use(FulfillWare({
+                actions: {
+                    ignore: {
+                        controller: function controller() {
+                            return '';
+                        }
+                    }
+                }
+            }));
+            respond(myBotmaster)('<notYourTag /><somethingInXml>{\"url\": \"https:/example.com\"}</somethingInXml>hi<ignore />');
+            myBotmaster.on('error', function (bot, error) {
+                return done(new Error('botmaster error: ' + error));
+            });
+            myTelegramMock.expect(['<notYourTag></notYourTag><somethingInXml>{\\\\\\"url\\\\\\": \\\\\\"https:/example.com\\\\\\"}</somethingInXml>hi\\\\\\"}'], done).sendUpdate('hi bob', function (err) {
                 if (err) done(new Error('supertest error: ' + err));
             });
         });

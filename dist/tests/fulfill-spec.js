@@ -566,5 +566,15 @@ describe('fulfill', function () {
                 done(err);
             });
         });
+
+        it('it should leave other xml alone', function (done) {
+            actions.hi.controller = function () {
+                return '';
+            };
+            fulfill(actions, {}, '<notYourTag></notYourTag><somethingInXml>{\"url\": \"https:/example.com\"}</somethingInXml>', function (err, result) {
+                result.should.equal('<notYourTag></notYourTag><somethingInXml>{"url": "https:/example.com"}</somethingInXml>');
+                done(err);
+            });
+        });
     });
 });
