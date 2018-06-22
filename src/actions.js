@@ -6,8 +6,8 @@
 const R = require('ramda');
 const { nextTick} = require('async');
 const debug = require('debug')('botmaster:ware:fulfill:actions');
-const render = require('posthtml-render');
-const {Notifier} = require('./utils');
+const _render = require('posthtml-render');
+const {Notifier, unescapeMalformed} = require('./utils');
 
 // ramda-style utils for procesing action arrays
 const setName = (val, key) => R.set(R.lensProp('name'), key)(val);
@@ -23,6 +23,7 @@ const seriesActions = R.filter(R.prop('series'));
 const parallelActions = R.filter(R.compose(R.not, R.prop('series')));
 const isSync = R.allPass([x => !R.isNil(x), R.anyPass([R.is(String), R.is(Number)])]);
 const clearNodes = (start, end, tree) => R.range(start, end).forEach(i => { tree[i] = '';});
+const render = R.compose(unescapeMalformed, _render);
 
 // get an object specifying serial and parallal tasks
 const getTasks = (tree, actions, context, fulfillPromise) => {

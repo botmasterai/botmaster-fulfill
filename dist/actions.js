@@ -11,10 +11,11 @@ var _require = require('async'),
     nextTick = _require.nextTick;
 
 var debug = require('debug')('botmaster:ware:fulfill:actions');
-var render = require('posthtml-render');
+var _render = require('posthtml-render');
 
 var _require2 = require('./utils'),
-    Notifier = _require2.Notifier;
+    Notifier = _require2.Notifier,
+    unescapeMalformed = _require2.unescapeMalformed;
 
 // ramda-style utils for procesing action arrays
 
@@ -50,6 +51,7 @@ var clearNodes = function clearNodes(start, end, tree) {
         tree[i] = '';
     });
 };
+var render = R.compose(unescapeMalformed, _render);
 
 // get an object specifying serial and parallal tasks
 var getTasks = function getTasks(tree, actions, context, fulfillPromise) {

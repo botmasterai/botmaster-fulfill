@@ -9,7 +9,7 @@ const {getTasks, isPendingActions:__isPendingActions, evalResponse } = require('
 const __parse = require('posthtml-parser');
 const render = require('posthtml-render');
 const debug = require('debug')('botmaster:ware:fulfill:parse');
-const {Notifier} = require('./utils');
+const {escapeMalformed, unescapeMalformed, Notifier} = require('./utils')
 
 const parseOptions = {
     xmlMode: true,
@@ -18,7 +18,7 @@ const parseOptions = {
     decodeEntities: false,
 };
 
-const parse = string => __parse(string, parseOptions);
+const parse = string => __parse(escapeMalformed(string), parseOptions);
 
 /**
  * Test for remaining actions in a string
@@ -64,7 +64,7 @@ const fulfill = (actions, context, input, tree, fulfillPromise, cb) => {
                 )(responses)
             );
             debug(`tree is now: ${JSON.stringify(tree)}`);
-            const response = render(tree);
+            const response = unescapeMalformed(render(tree));
             tree = parse(response);
             if (__isPendingActions(tree, actions)) {
                 debug(`recursing response: "${response}"`);

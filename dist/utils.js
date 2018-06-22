@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -17,7 +17,7 @@ var Notifier = function () {
     }
 
     _createClass(Notifier, [{
-        key: "wrapCb",
+        key: 'wrapCb',
         value: function wrapCb(cb) {
             var _this2 = this;
 
@@ -34,4 +34,19 @@ var Notifier = function () {
     return Notifier;
 }();
 
-module.exports = { Notifier: Notifier };
+var SECRET_LT = 'LT_ENCODED_FOR_FULFILL';
+var SECRET_GT = 'GT_ENCODED_FOR_FULFILL';
+
+function escapeMalformed(text) {
+    return text.replace(/<(?!\/?\w+( \w+=[^<>]+)?( ?\/)?>)/gm, SECRET_LT).replace(/(?<!<\/?\w+( \w+=[^<>]+)?( ?\/)?)>/gm, SECRET_GT);
+}
+
+function unescapeMalformed(text) {
+    return text.replace(SECRET_LT, '<').replace(SECRET_GT, '>');
+}
+
+module.exports = {
+    Notifier: Notifier,
+    escapeMalformed: escapeMalformed,
+    unescapeMalformed: unescapeMalformed
+};

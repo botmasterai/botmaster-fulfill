@@ -73,7 +73,7 @@ describe('botmaster fulfill end to end', function () {
             myBotmaster.on('error', function (bot, error) {
                 return done(new Error('botmaster error: ' + error));
             });
-            myTelegramMock.expect(['<notYourTag></notYourTag><somethingInXml>{\\\\\\"url\\\\\\": \\\\\\"https:/example.com\\\\\\"}</somethingInXml>hi\\\\\\"}'], done).sendUpdate('hi bob', function (err) {
+            myTelegramMock.expect(['<notYourTag></notYourTag><somethingInXml>{"url": "https:/example.com"}</somethingInXml>hi'], done).sendUpdate('hi bob', function (err) {
                 if (err) done(new Error('supertest error: ' + err));
             });
         });

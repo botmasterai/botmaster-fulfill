@@ -22,6 +22,8 @@ var render = require('posthtml-render');
 var debug = require('debug')('botmaster:ware:fulfill:parse');
 
 var _require3 = require('./utils'),
+    escapeMalformed = _require3.escapeMalformed,
+    unescapeMalformed = _require3.unescapeMalformed,
     Notifier = _require3.Notifier;
 
 var parseOptions = {
@@ -32,7 +34,7 @@ var parseOptions = {
 };
 
 var parse = function parse(string) {
-    return __parse(string, parseOptions);
+    return __parse(escapeMalformed(string), parseOptions);
 };
 
 /**
@@ -72,7 +74,7 @@ var fulfill = function fulfill(actions, context, input, tree, fulfillPromise, cb
                 return evaluate !== 'step';
             }, 'evaluate')), R.flatten)(responses));
             debug('tree is now: ' + JSON.stringify(tree));
-            var response = render(tree);
+            var response = unescapeMalformed(render(tree));
             tree = parse(response);
             if (__isPendingActions(tree, actions)) {
                 debug('recursing response: "' + response + '"');

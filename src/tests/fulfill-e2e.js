@@ -62,7 +62,7 @@ describe('botmaster fulfill end to end', () => {
             respond(myBotmaster)('<notYourTag /><somethingInXml>{\"url\": \"https:/example.com\"}</somethingInXml>hi<ignore />');
             myBotmaster.on('error', (bot, error) => done(new Error(`botmaster error: ${error}`)));
             myTelegramMock
-                .expect([`<notYourTag></notYourTag><somethingInXml>{\\\\\\"url\\\\\\": \\\\\\"https:/example.com\\\\\\"}</somethingInXml>hi\\\\\\"}`], done)
+                .expect([`<notYourTag></notYourTag><somethingInXml>{\"url\": \"https:/example.com\"}</somethingInXml>hi`], done)
                 .sendUpdate('hi bob', err => {
                     if (err) done(new Error('supertest error: ' + err));
                 });
