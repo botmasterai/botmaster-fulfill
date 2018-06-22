@@ -960,12 +960,22 @@ boom@2.x.x:
   dependencies:
     hoek "2.x.x"
 
-botmaster-telegram@>=1.0.0, botmaster-telegram@^1.0.0:
+botmaster-telegram@>=1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/botmaster-telegram/-/botmaster-telegram-1.0.0.tgz#57396334e82754a389e6aa3d994eee43ee73da1c"
   dependencies:
     body-parser "^1.17.1"
     botmaster "^3.0.7"
+    debug "^2.6.3"
+    express "^4.15.2"
+    lodash "^4.17.4"
+    request-promise "^4.2.0"
+
+botmaster-telegram@^1.0.2-0:
+  version "1.0.2-0"
+  resolved "https://registry.yarnpkg.com/botmaster-telegram/-/botmaster-telegram-1.0.2-0.tgz#f4edf203f2fd9952d1395a8d318b4a0eb7bd70f5"
+  dependencies:
+    body-parser "^1.17.1"
     debug "^2.6.3"
     express "^4.15.2"
     lodash "^4.17.4"
@@ -982,11 +992,18 @@ botmaster-test@1.0.6:
     botmaster ">=3.0.0"
     botmaster-telegram ">=1.0.0"
 
-botmaster@>=3.0.0, botmaster@^3.0.7, botmaster@^3.0.8:
+botmaster@>=3.0.0, botmaster@^3.0.7:
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/botmaster/-/botmaster-3.0.8.tgz#d9dd2c33f3e6fbdf535ef8b36cc65dd815421c2f"
   dependencies:
     debug "^2.6.1"
+    lodash "^4.17.4"
+
+botmaster@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/botmaster/-/botmaster-3.2.0.tgz#7a0024ac4eda2932bf10bcbcdd291f74e7cdd758"
+  dependencies:
+    debug "^3.1.0"
     lodash "^4.17.4"
 
 brace-expansion@^1.1.7:
@@ -1315,6 +1332,12 @@ debug@^2.1.1, debug@^2.2.0, debug@^2.5.2, debug@^2.6.0, debug@^2.6.1, debug@^2.6
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.6.tgz#a9fa6fbe9ca43cf1e79f73b75c0189cbb7d6db5a"
   dependencies:
     ms "0.7.3"
+
+debug@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
+  dependencies:
+    ms "2.0.0"
 
 debug@~2.2.0:
   version "2.2.0"
@@ -2958,6 +2981,10 @@ ms@0.7.2:
 ms@0.7.3:
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.3.tgz#708155a5e44e33f5fd0fc53e81d0d40a91be1fff"
+
+ms@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
 
 mute-stream@0.0.5:
   version "0.0.5"

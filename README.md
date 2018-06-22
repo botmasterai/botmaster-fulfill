@@ -5,7 +5,7 @@
 
 Battle-tested middleware for botmaster <https://botmasterai.github.io/>).
 
-Now updated to work with Botmaster >= v3.0! For botmaster 2.x please use `botmaster-fulfill@3.2.0`
+Now updated to handle malformed tags! This is a breaking change since it requires negative look-behind in nodejs, so only nodejs > 9 is supported. You can get it at 
 
 Enable chatbots to perform actions on Node.js.
 
